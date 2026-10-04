@@ -1,3 +1,8 @@
+CREATE TABLE `config` (
+	`key` text PRIMARY KEY NOT NULL,
+	`value` text NOT NULL
+);
+--> statement-breakpoint
 CREATE TABLE `contents` (
 	`id` integer PRIMARY KEY NOT NULL,
 	`name` text NOT NULL,
@@ -14,7 +19,8 @@ CREATE TABLE `contents` (
 CREATE TABLE `rooms` (
 	`id` integer PRIMARY KEY NOT NULL,
 	`name` text NOT NULL,
-	`seat_count` integer
+	`seat_count` integer,
+	`cinema_id` integer
 );
 --> statement-breakpoint
 CREATE TABLE `showings` (
@@ -28,6 +34,7 @@ CREATE TABLE `showings` (
 	`original_language` text,
 	`is_original_version` integer,
 	`is_subtitled` integer,
+	`subtitled_language` text,
 	`is_3d` integer,
 	`is_dolby_atmos` integer,
 	`is_imax` integer,
@@ -36,5 +43,6 @@ CREATE TABLE `showings` (
 	`is_preview` integer,
 	`ticket_url` text,
 	`state` text NOT NULL,
-	`fetched_at` text NOT NULL
+	`fetched_at` text NOT NULL,
+	`cinema_id` integer
 );
