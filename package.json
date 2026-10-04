@@ -1,0 +1,26 @@
+{
+  "name": "showtimes",
+  "description": "Self-hosted program viewer for Cineamo cinemas",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "bun run --hot src/index.tsx",
+    "start": "bun run src/index.tsx",
+    "lint": "oxlint --fix src",
+    "format": "prettier --write ."
+  },
+  "dependencies": {
+    "drizzle-orm": "^0.45.3",
+    "hono": "^4.13.13",
+    "lucide-static": "^1.52.0"
+  },
+  "devDependencies": {
+    "@types/bun": "latest",
+    "bun-types": "^1.4.2",
+    "drizzle-kit": "^0.31.11",
+    "oxlint": "^1.86.0",
+    "prettier": "^3.9.9",
+    "typescript": "^7.0.2"
+  }
+}

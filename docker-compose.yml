@@ -1,0 +1,12 @@
+services:
+  luxor:
+    build: .
+    ports:
+      - "3000:3000"
+    volumes:
+      - luxor-data:/app/data
+    environment:
+      DB_PATH: /app/data/luxor.db
+
+volumes:
+  luxor-data:

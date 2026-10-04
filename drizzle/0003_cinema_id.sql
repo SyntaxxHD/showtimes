@@ -1,0 +1,2 @@
+ALTER TABLE rooms ADD COLUMN cinema_id INTEGER;
+ALTER TABLE showings ADD COLUMN cinema_id INTEGER;

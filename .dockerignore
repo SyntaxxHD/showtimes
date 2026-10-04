@@ -1,0 +1,8 @@
+node_modules
+*.db
+*.db-shm
+*.db-wal
+.oxlintrc.json
+eslint.config.js
+prettier.config.js
+.env
