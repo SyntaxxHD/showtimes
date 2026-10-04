@@ -207,7 +207,7 @@ export function getProgramFromDb(cinemaId: number, date: string): Program {
   let latestFetchedAt = ''
 
   for (const row of rows) {
-    if (row.fetchedAt > latestFetchedAt) latestFetchedAt = row.fetchedAt
+    if (row.fetchedAt > latestFetchedAt) {latestFetchedAt = row.fetchedAt}
 
     if (!roomMap.has(row.roomTableId)) {
       roomMap.set(row.roomTableId, { id: row.roomTableId, name: row.roomName, seatCount: row.seatCount })
