@@ -1,7 +1,7 @@
 {
   "name": "showtimes",
   "description": "Self-hosted program viewer for Cineamo cinemas",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "private": true,
   "type": "module",
   "scripts": {
