@@ -1,12 +1,13 @@
 services:
-  luxor:
+  showtimes:
     build: .
+    image: ghcr.io/syntaxxhd/showtimes:latest
     ports:
       - "3000:3000"
     volumes:
-      - luxor-data:/app/data
+      - showtimes-data:/app/data
     environment:
-      DB_PATH: /app/data/luxor.db
+      DB_PATH: /app/data/showtimes.db
 
 volumes:
-  luxor-data:
+  showtimes-data:

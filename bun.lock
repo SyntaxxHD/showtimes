@@ -3,7 +3,7 @@
   "configVersion": 1,
   "workspaces": {
     "": {
-      "name": "luxor-api",
+      "name": "showtimes",
       "dependencies": {
         "drizzle-orm": "^0.45.3",
         "hono": "^4.13.13",

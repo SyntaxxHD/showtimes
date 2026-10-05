@@ -17,10 +17,38 @@ Bun · Hono · Server-side JSX · SQLite (via Drizzle)
 
 ## Setup
 
+### Docker (recommended)
+
+Create a `docker-compose.yml`:
+
+```yaml
+services:
+  showtimes:
+    image: ghcr.io/syntaxxhd/showtimes:latest
+    ports:
+      - "3000:3000"
+    volumes:
+      - showtimes-data:/app/data
+    environment:
+      CINEMA_ID: 1045
+      DB_PATH: /app/data/showtimes.db
+
+volumes:
+  showtimes-data:
+```
+
+Then run:
+
+```sh
+docker compose up -d
+```
+
+### Local
+
 Requires [Bun](https://bun.sh).
 
 ```sh
-git clone ...
+git clone https://github.com/SyntaxxHD/showtimes.git
 cd showtimes
 bun install
 bun run dev
