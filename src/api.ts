@@ -3,7 +3,6 @@ import { transform } from './transform.ts'
 import { persistProgram } from './db.ts'
 
 const BASE = 'https://api.cineamo.com'
-export const CINEMA_ID = parseInt(process.env.CINEMA_ID ?? '1045', 10)
 const CACHE_TTL_MS = 60 * 60 * 1000
 
 interface Cache {
@@ -12,7 +11,7 @@ interface Cache {
 }
 
 declare global {
-  var _programCache: Cache | undefined
+  var _programCache: Map<number, Cache> | undefined
 }
 
 async function fetchAllPages<TKey extends string, TItem>(
@@ -44,20 +43,19 @@ async function fetchAllPages<TKey extends string, TItem>(
   return items.concat(remaining.flat())
 }
 
-async function fetchShowings(): Promise<ApiShowing[]> {
+async function fetchShowings(cinemaId: number): Promise<ApiShowing[]> {
   return fetchAllPages<'showings', ApiShowing>(
-    `/showings?cinemaId=${CINEMA_ID}`,
+    `/showings?cinemaId=${cinemaId}`,
     'showings'
   )
 }
 
-async function fetchRooms(): Promise<ApiCinemaRoom[]> {
+async function fetchRooms(cinemaId: number): Promise<ApiCinemaRoom[]> {
   return fetchAllPages<'cinema-rooms', ApiCinemaRoom>(
-    `/cinema-rooms?cinemaId=${CINEMA_ID}`,
+    `/cinema-rooms?cinemaId=${cinemaId}`,
     'cinema-rooms'
   )
 }
-
 
 interface ImagePaths {
   backdropPath?: string
@@ -121,21 +119,30 @@ export async function fetchCinemaInfo(cinemaId: number): Promise<CinemaInfo> {
   }
 }
 
-export async function getProgram(): Promise<Program> {
-  const cached = globalThis._programCache
+export function clearProgramCache(cinemaId?: number): void {
+  if (cinemaId === undefined) {
+    globalThis._programCache = undefined
+  } else {
+    globalThis._programCache?.delete(cinemaId)
+  }
+}
+
+export async function getProgram(cinemaId: number): Promise<Program> {
+  globalThis._programCache ??= new Map()
+  const cached = globalThis._programCache.get(cinemaId)
 
   if (cached && Date.now() < cached.expiresAt) {
     return cached.data
   }
 
-  const [rooms, showings] = await Promise.all([fetchRooms(), fetchShowings()])
+  const [rooms, showings] = await Promise.all([fetchRooms(cinemaId), fetchShowings(cinemaId)])
   const contentIds = [...new Set(showings.map(s => s.contentId))]
   const imageMap = await fetchImagePaths(contentIds)
   const program = transform(rooms, showings, imageMap)
 
-  persistProgram(CINEMA_ID, program.rooms, program.movies)
+  persistProgram(cinemaId, program.rooms, program.movies)
 
-  globalThis._programCache = { data: program, expiresAt: Date.now() + CACHE_TTL_MS }
+  globalThis._programCache.set(cinemaId, { data: program, expiresAt: Date.now() + CACHE_TTL_MS })
 
   return program
 }

@@ -1,7 +1,15 @@
 import type { FC } from 'hono/jsx'
 import type { Filters, Movie, Program, Room, Showtime } from '../types.ts'
 import { Icon } from './Icon.tsx'
-
+import {
+  EmptyState,
+  ExternalLink,
+  FilterChip,
+  FilterRow,
+  ViewBtn,
+  roomColorClass,
+  roomColClass
+} from './components.tsx'
 
 const TZ = 'Europe/Berlin'
 
@@ -18,18 +26,20 @@ function formatTime(iso: string): string {
 }
 
 function formatDayLabel(dayKey: string): string {
-  // dayKey is YYYY-MM-DD in local time
   const d = new Date(dayKey + 'T12:00:00')
   const today = todayLocal()
   const tomorrow = new Date(today)
   tomorrow.setDate(tomorrow.getDate() + 1)
   const tomorrowKey = tomorrow.toLocaleDateString('en-CA')
+
   if (dayKey === today) {
     return 'Heute'
   }
+
   if (dayKey === tomorrowKey) {
     return 'Morgen'
   }
+
   return d.toLocaleDateString('de-DE', {
     weekday: 'short',
     day: '2-digit',
@@ -43,12 +53,15 @@ function formatDayParts(dayKey: string): { weekday: string; date: string } {
   const tomorrow = new Date(today)
   tomorrow.setDate(tomorrow.getDate() + 1)
   const tomorrowKey = tomorrow.toLocaleDateString('en-CA')
+
   if (dayKey === today) {
     return { weekday: 'Heute', date: d.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit' }) }
   }
+
   if (dayKey === tomorrowKey) {
     return { weekday: 'Morgen', date: d.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit' }) }
   }
+
   return {
     weekday: d.toLocaleDateString('de-DE', { weekday: 'short' }),
     date: d.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit' })
@@ -115,14 +128,69 @@ function formatBadges(s: Showtime): string[] {
   return b
 }
 
+function weekContaining(day: string): string {
+  const d = new Date(day + 'T12:00:00')
+  const dow = d.getDay() === 0 ? 7 : d.getDay()
+  d.setDate(d.getDate() - dow + 1)
+  const year = d.getFullYear()
+  const jan4 = new Date(year, 0, 4)
+  const startOfWeek1 = new Date(jan4)
+  startOfWeek1.setDate(jan4.getDate() - (jan4.getDay() === 0 ? 6 : jan4.getDay() - 1))
+  const weekNum = Math.round((d.getTime() - startOfWeek1.getTime()) / (7 * 24 * 60 * 60 * 1000)) + 1
+  return `${year}-W${String(weekNum).padStart(2, '0')}`
+}
 
-function showtimeMatchesFilters(s: Showtime, filters: Filters): boolean {
+function mondayOf(week: string): string {
+  const [yearStr, wStr] = week.split('-W')
+  const year = parseInt(yearStr, 10)
+  const weekNum = parseInt(wStr, 10)
+  const jan4 = new Date(year, 0, 4)
+  const startOfWeek1 = new Date(jan4)
+  startOfWeek1.setDate(jan4.getDate() - (jan4.getDay() === 0 ? 6 : jan4.getDay() - 1))
+  const monday = new Date(startOfWeek1)
+  monday.setDate(startOfWeek1.getDate() + (weekNum - 1) * 7)
+  return monday.toLocaleDateString('en-CA')
+}
+
+function prevWeek(week: string): string {
+  const monday = mondayOf(week)
+  const d = new Date(monday + 'T12:00:00')
+  d.setDate(d.getDate() - 7)
+  return weekContaining(d.toLocaleDateString('en-CA'))
+}
+
+function nextWeek(week: string): string {
+  const monday = mondayOf(week)
+  const d = new Date(monday + 'T12:00:00')
+  d.setDate(d.getDate() + 7)
+  return weekContaining(d.toLocaleDateString('en-CA'))
+}
+
+function weekDays(week: string): string[] {
+  const monday = mondayOf(week)
+  const days: string[] = []
+  const d = new Date(monday + 'T12:00:00')
+  for (let i = 0; i < 7; i++) {
+    days.push(d.toLocaleDateString('en-CA'))
+    d.setDate(d.getDate() + 1)
+  }
+  return days
+}
+
+function showtimeMatchesFilters(s: Showtime, filters: Filters, activeWeek: string): boolean {
   if (s.state === 'cancelled') {
     return false
   }
 
-  if (filters.date && getDayKey(s.startDatetime) !== filters.date) {
-    return false
+  if (filters.date) {
+    if (getDayKey(s.startDatetime) !== filters.date) {
+      return false
+    }
+  } else {
+    const days = weekDays(activeWeek)
+    if (!days.includes(getDayKey(s.startDatetime))) {
+      return false
+    }
   }
 
   if (filters.roomId && s.roomId !== filters.roomId) {
@@ -176,15 +244,14 @@ function showtimeMatchesFilters(s: Showtime, filters: Filters): boolean {
   return true
 }
 
-function applyFilters(movies: Movie[], filters: Filters): Movie[] {
+function applyFilters(movies: Movie[], filters: Filters, activeWeek: string): Movie[] {
   return movies
     .map(m => ({
       ...m,
-      showtimes: m.showtimes.filter(s => showtimeMatchesFilters(s, filters))
+      showtimes: m.showtimes.filter(s => showtimeMatchesFilters(s, filters, activeWeek))
     }))
     .filter(m => m.showtimes.length > 0)
 }
-
 
 const ShowtimePill: FC<{ s: Showtime }> = ({ s }) => {
   const lang = langLabel(s.isOriginalVersion, s.isSubtitled, s.subtitledLanguage)
@@ -192,20 +259,22 @@ const ShowtimePill: FC<{ s: Showtime }> = ({ s }) => {
   const content = (
     <span class='showtime-pill'>
       <span class='pill-time'>{formatTime(s.startDatetime)}</span>
-      <span class={`pill-room room-${s.roomName.toLowerCase()}`}>{s.roomName}</span>
+      <span class={`pill-room ${roomColorClass(s.roomName)}`}>{s.roomName}</span>
       {lang && <span class='pill-lang'>{lang}</span>}
       {badges.map(b => (
         <span class='pill-badge'>{b}</span>
       ))}
     </span>
   )
+
   if (s.ticketUrl) {
     return (
-      <a href={s.ticketUrl} target='_blank' rel='noopener' class='showtime-link'>
+      <ExternalLink href={s.ticketUrl} class='showtime-link'>
         {content}
-      </a>
+      </ExternalLink>
     )
   }
+
   return content
 }
 
@@ -214,11 +283,12 @@ const MovieCard: FC<{ movie: Movie }> = ({ movie: m }) => {
   return (
     <article class='movie-card'>
       <div class='movie-body'>
-        {m.posterImageUrl && (
-          <div class='movie-poster'>
-            <img src={m.posterImageUrl} alt={m.name} loading='lazy' />
-          </div>
-        )}
+        <div class='movie-poster'>
+          {m.posterImageUrl
+            ? <img src={m.posterImageUrl} alt={m.name} loading='lazy' />
+            : <div class='movie-poster-placeholder'><Icon name='film' size={32} /></div>
+          }
+        </div>
         <div class='movie-info'>
           <h2 class='movie-title'>{m.name}</h2>
           <div class='movie-meta'>
@@ -244,7 +314,6 @@ const MovieCard: FC<{ movie: Movie }> = ({ movie: m }) => {
   )
 }
 
-
 const ByRoomView: FC<{ movies: Movie[]; rooms: Room[] }> = ({ movies, rooms }) => {
   const roomShowtimes = new Map<number, { movie: Movie; showtime: Showtime }[]>()
   for (const r of rooms) {
@@ -267,7 +336,6 @@ const ByRoomView: FC<{ movies: Movie[]; rooms: Room[] }> = ({ movies, rooms }) =
           return null
         }
 
-        // group by day
         const byDay = new Map<string, { movie: Movie; showtime: Showtime }[]>()
         for (const e of entries) {
           const key = getDayKey(e.showtime.startDatetime)
@@ -279,7 +347,7 @@ const ByRoomView: FC<{ movies: Movie[]; rooms: Room[] }> = ({ movies, rooms }) =
 
         return (
           <section class='room-section'>
-            <h2 class={`room-heading room-${room.name.toLowerCase()}`}>
+            <h2 class={`room-heading ${roomColorClass(room.name)}`}>
               <span class='room-dot'></span>
               {room.name}
               {room.seatCount != null && <small class='room-seats'>{room.seatCount} Plätze</small>}
@@ -296,14 +364,9 @@ const ByRoomView: FC<{ movies: Movie[]; rooms: Room[] }> = ({ movies, rooms }) =
                         <ShowtimePill s={s} />
                       </div>
                       {s.ticketUrl && (
-                        <a
-                          href={s.ticketUrl}
-                          target='_blank'
-                          rel='noopener'
-                          class='ticket-link'
-                        >
+                        <ExternalLink href={s.ticketUrl} class='ticket-link'>
                           → Ticket
-                        </a>
+                        </ExternalLink>
                       )}
                     </div>
                   ))}
@@ -316,7 +379,6 @@ const ByRoomView: FC<{ movies: Movie[]; rooms: Room[] }> = ({ movies, rooms }) =
     </div>
   )
 }
-
 
 const ScheduleView: FC<{ movies: Movie[]; rooms: Room[] }> = ({ movies, rooms }) => {
   const byRoom = new Map<number, { movie: Movie; s: Showtime }[]>()
@@ -335,7 +397,7 @@ const ScheduleView: FC<{ movies: Movie[]; rooms: Room[] }> = ({ movies, rooms })
   const activeRooms = rooms.filter(r => (byRoom.get(r.id)?.length ?? 0) > 0)
   const allShowings = movies.flatMap(m => m.showtimes).filter(s => s.endDatetime != null)
   if (allShowings.length === 0) {
-    return <p class='empty'>Keine Vorstellungen.</p>
+    return <EmptyState>Keine Vorstellungen.</EmptyState>
   }
 
   const startHour = Math.min(...allShowings.map(s => getHour(s.startDatetime)))
@@ -355,7 +417,7 @@ const ScheduleView: FC<{ movies: Movie[]; rooms: Room[] }> = ({ movies, rooms })
       <div class='schedule-header-row'>
         <div class='schedule-time-gutter' />
         {activeRooms.map(room => (
-          <div class={`schedule-col-header room-${room.name.toLowerCase()}`}>
+          <div class={`schedule-col-header ${roomColorClass(room.name)}`}>
             {room.name}
           </div>
         ))}
@@ -375,7 +437,7 @@ const ScheduleView: FC<{ movies: Movie[]; rooms: Room[] }> = ({ movies, rooms })
           ))}
         </div>
         {activeRooms.map(room => (
-          <div class={`schedule-column room-col-${room.name.toLowerCase()}`}>
+          <div class={`schedule-column ${roomColClass(room.name)}`}>
             <div class='schedule-col-body' style={`height: ${totalMinutes * pxPerMin}px`}>
               {(byRoom.get(room.id) ?? []).filter(({ s }) => s.endDatetime != null).map(({ movie: m, s }) => {
                 const startMin =
@@ -392,15 +454,10 @@ const ScheduleView: FC<{ movies: Movie[]; rooms: Room[] }> = ({ movies, rooms })
                     title={`${m.name} (${formatTime(s.startDatetime)}–${formatTime(s.endDatetime!)})`}
                   >
                     {s.ticketUrl ? (
-                      <a
-                        href={s.ticketUrl}
-                        target='_blank'
-                        rel='noopener'
-                        class='schedule-block-link'
-                      >
+                      <ExternalLink href={s.ticketUrl} class='schedule-block-link'>
                         {m.name}
                         <span class='sched-time'>{formatTime(s.startDatetime)}</span>
-                      </a>
+                      </ExternalLink>
                     ) : (
                       <span>
                         {m.name}
@@ -419,15 +476,8 @@ const ScheduleView: FC<{ movies: Movie[]; rooms: Room[] }> = ({ movies, rooms })
   )
 }
 
-
-const FilterBar: FC<{ program: Program; filters: Filters; historicDays: string[] }> = ({ program, filters, historicDays }) => {
-  const daySet = new Set<string>(historicDays)
-  for (const m of program.movies) {
-    for (const s of m.showtimes) {
-      daySet.add(getDayKey(s.startDatetime))
-    }
-  }
-  const days = [...daySet].sort()
+const FilterBar: FC<{ program: Program; filters: Filters; availableDays: Set<string>; activeWeek: string }> = ({ program, filters, availableDays, activeWeek }) => {
+  const days = weekDays(activeWeek)
 
   const langs = new Set<string>()
   let has3D = false,
@@ -443,288 +493,186 @@ const FilterBar: FC<{ program: Program; filters: Filters; historicDays: string[]
       } else {
         langs.add('deu')
       }
-      if (s.is3D) {
-        has3D = true
-      }
-      if (s.isDolbyAtmos) {
-        hasDolby = true
-      }
-      if (s.isImax) {
-        hasImax = true
-      }
-      if (s.is4DX) {
-        has4DX = true
-      }
+      if (s.is3D) has3D = true
+      if (s.isDolbyAtmos) hasDolby = true
+      if (s.isImax) hasImax = true
+      if (s.is4DX) has4DX = true
     }
   }
 
   function filterUrl(overrides: Partial<Record<string, string | null>>): string {
     const params = new URLSearchParams()
     const p = (k: string, v: string | null | undefined) => {
-      if (v) {
-        params.set(k, v)
-      }
+      if (v) params.set(k, v)
     }
     p('view', filters.view !== 'movie' ? filters.view : null)
+    p('week', overrides.week !== undefined ? overrides.week : activeWeek)
     p('date', overrides.date !== undefined ? overrides.date : filters.date)
-    p(
-      'room',
-      overrides.room !== undefined
-        ? overrides.room
-        : filters.roomId
-          ? String(filters.roomId)
-          : null
-    )
+    p('room', overrides.room !== undefined ? overrides.room : filters.roomId ? String(filters.roomId) : null)
     p('lang', overrides.lang !== undefined ? overrides.lang : filters.lang)
     p('format', overrides.format !== undefined ? overrides.format : filters.format)
     p('time', overrides.time !== undefined ? overrides.time : filters.time)
-    if (filters.premiereOnly) {
-      params.set('premiere', '1')
-    }
+    if (filters.premiereOnly) params.set('premiere', '1')
     const q = params.toString()
     return '/program' + (q ? '?' + q : '')
   }
 
   return (
     <div class='filter-bar'>
-      <div class='filter-row'>
-        <span class='filter-label'>
-          <Icon name='calendar-days' size={13} />
-          Tag
-        </span>
-        <div class='day-strip-wrap'>
-          <div class='day-strip'>
-            <a
-              href={filterUrl({ date: null })}
-              class={`day-chip ${!filters.date ? 'active' : ''}`}
-            >
-              <span class='day-chip-weekday'>Alle</span>
-            </a>
-            {days.map(d => {
-              const { weekday, date } = formatDayParts(d)
-              return (
-                <a
-                  href={filterUrl({ date: d })}
-                  class={`day-chip ${filters.date === d ? 'active' : ''}`}
-                >
-                  <span class='day-chip-weekday'>{weekday}</span>
-                  <span class='day-chip-date'>{date}</span>
-                </a>
-              )
-            })}
-          </div>
-        </div>
-      </div>
-
-      <div class='filter-row'>
-        <span class='filter-label'>
-          <Icon name='door-open' size={13} />
-          Saal
-        </span>
-        <div class='filter-chips'>
+      <FilterRow icon='calendar-days' label='Tag'>
+        <div class='day-strip'>
+          <a href={filterUrl({ week: prevWeek(activeWeek), date: null })} class='week-arrow' aria-label='Vorherige Woche'>&#8249;</a>
           <a
-            href={filterUrl({ room: null })}
-            class={`chip ${!filters.roomId ? 'active' : ''}`}
+            href={filterUrl({ date: null })}
+            class={`day-chip ${!filters.date ? 'active' : ''}`}
           >
-            Alle
+            <span class='day-chip-weekday'>Woche</span>
           </a>
+          {days.map(d => {
+            const { weekday, date } = formatDayParts(d)
+            const hasData = availableDays.has(d)
+            return (
+              <a
+                href={filterUrl({ date: d })}
+                class={`day-chip ${filters.date === d ? 'active' : ''} ${!hasData ? 'day-chip-empty' : ''}`}
+              >
+                <span class='day-chip-weekday'>{weekday}</span>
+                <span class='day-chip-date'>{date}</span>
+              </a>
+            )
+          })}
+          <a href={filterUrl({ week: nextWeek(activeWeek), date: null })} class='week-arrow' aria-label='Nächste Woche'>&#8250;</a>
+        </div>
+      </FilterRow>
+
+      <FilterRow icon='door-open' label='Saal'>
+        <div class='filter-chips'>
+          <FilterChip href={filterUrl({ room: null })} active={!filters.roomId}>
+            Alle
+          </FilterChip>
           {program.rooms.map(r => (
-            <a
+            <FilterChip
               href={filterUrl({ room: String(r.id) })}
-              class={`chip chip-room room-${r.name.toLowerCase()} ${filters.roomId === r.id ? 'active' : ''}`}
+              active={filters.roomId === r.id}
+              extraClass={`chip-room ${roomColorClass(r.name)}`}
             >
               {r.name}
-            </a>
+            </FilterChip>
           ))}
         </div>
-      </div>
+      </FilterRow>
 
-      <div class='filter-row'>
-        <span class='filter-label'>
-          <Icon name='languages' size={13} />
-          Sprache
-        </span>
+      <FilterRow icon='languages' label='Sprache'>
         <div class='filter-chips'>
-          <a
-            href={filterUrl({ lang: null })}
-            class={`chip ${!filters.lang ? 'active' : ''}`}
-          >
+          <FilterChip href={filterUrl({ lang: null })} active={!filters.lang}>
             Alle
-          </a>
+          </FilterChip>
           {langs.has('deu') && (
-            <a
-              href={filterUrl({ lang: 'deu' })}
-              class={`chip ${filters.lang === 'deu' ? 'active' : ''}`}
-            >
+            <FilterChip href={filterUrl({ lang: 'deu' })} active={filters.lang === 'deu'}>
               Deutsch
-            </a>
+            </FilterChip>
           )}
           {langs.has('ov') && (
-            <a
-              href={filterUrl({ lang: 'ov' })}
-              class={`chip ${filters.lang === 'ov' ? 'active' : ''}`}
-            >
+            <FilterChip href={filterUrl({ lang: 'ov' })} active={filters.lang === 'ov'}>
               OV
-            </a>
+            </FilterChip>
           )}
           {langs.has('omu') && (
-            <a
-              href={filterUrl({ lang: 'omu' })}
-              class={`chip ${filters.lang === 'omu' ? 'active' : ''}`}
-            >
+            <FilterChip href={filterUrl({ lang: 'omu' })} active={filters.lang === 'omu'}>
               OmU
-            </a>
+            </FilterChip>
           )}
         </div>
-      </div>
+      </FilterRow>
 
       {(has3D || hasDolby || hasImax || has4DX) && (
-        <div class='filter-row'>
-          <span class='filter-label'>
-            <Icon name='sparkles' size={13} />
-            Format
-          </span>
+        <FilterRow icon='sparkles' label='Format'>
           <div class='filter-chips'>
-            <a
-              href={filterUrl({ format: null })}
-              class={`chip ${!filters.format ? 'active' : ''}`}
-            >
+            <FilterChip href={filterUrl({ format: null })} active={!filters.format}>
               Alle
-            </a>
+            </FilterChip>
             {has3D && (
-              <a
-                href={filterUrl({ format: '3d' })}
-                class={`chip ${filters.format === '3d' ? 'active' : ''}`}
-              >
+              <FilterChip href={filterUrl({ format: '3d' })} active={filters.format === '3d'}>
                 3D
-              </a>
+              </FilterChip>
             )}
             {hasDolby && (
-              <a
-                href={filterUrl({ format: 'dolby' })}
-                class={`chip ${filters.format === 'dolby' ? 'active' : ''}`}
-              >
+              <FilterChip href={filterUrl({ format: 'dolby' })} active={filters.format === 'dolby'}>
                 Dolby Atmos
-              </a>
+              </FilterChip>
             )}
             {hasImax && (
-              <a
-                href={filterUrl({ format: 'imax' })}
-                class={`chip ${filters.format === 'imax' ? 'active' : ''}`}
-              >
+              <FilterChip href={filterUrl({ format: 'imax' })} active={filters.format === 'imax'}>
                 IMAX
-              </a>
+              </FilterChip>
             )}
             {has4DX && (
-              <a
-                href={filterUrl({ format: '4dx' })}
-                class={`chip ${filters.format === '4dx' ? 'active' : ''}`}
-              >
+              <FilterChip href={filterUrl({ format: '4dx' })} active={filters.format === '4dx'}>
                 4DX
-              </a>
+              </FilterChip>
             )}
           </div>
-        </div>
+        </FilterRow>
       )}
 
-      <div class='filter-row'>
-        <span class='filter-label'>
-          <Icon name='clock' size={13} />
-          Zeit
-        </span>
+      <FilterRow icon='clock' label='Zeit'>
         <div class='filter-chips'>
-          <a
-            href={filterUrl({ time: null })}
-            class={`chip ${!filters.time ? 'active' : ''}`}
-          >
+          <FilterChip href={filterUrl({ time: null })} active={!filters.time}>
             Alle
-          </a>
-          <a
-            href={filterUrl({ time: 'morning' })}
-            class={`chip ${filters.time === 'morning' ? 'active' : ''}`}
-          >
+          </FilterChip>
+          <FilterChip href={filterUrl({ time: 'morning' })} active={filters.time === 'morning'}>
             Vormittag (&lt;13 Uhr)
-          </a>
-          <a
-            href={filterUrl({ time: 'afternoon' })}
-            class={`chip ${filters.time === 'afternoon' ? 'active' : ''}`}
-          >
+          </FilterChip>
+          <FilterChip href={filterUrl({ time: 'afternoon' })} active={filters.time === 'afternoon'}>
             Nachmittag (13–18 Uhr)
-          </a>
-          <a
-            href={filterUrl({ time: 'evening' })}
-            class={`chip ${filters.time === 'evening' ? 'active' : ''}`}
-          >
+          </FilterChip>
+          <FilterChip href={filterUrl({ time: 'evening' })} active={filters.time === 'evening'}>
             Abend (&gt;18 Uhr)
-          </a>
+          </FilterChip>
         </div>
-      </div>
+      </FilterRow>
     </div>
   )
 }
 
-
-const ViewToggle: FC<{ filters: Filters }> = ({ filters }) => {
+const ViewToggle: FC<{ filters: Filters; activeWeek: string }> = ({ filters, activeWeek }) => {
   function viewUrl(v: string): string {
     const params = new URLSearchParams()
-    if (v !== 'movie') {
-      params.set('view', v)
-    }
-    if (filters.date) {
-      params.set('date', filters.date)
-    }
-    if (filters.roomId) {
-      params.set('room', String(filters.roomId))
-    }
-    if (filters.lang) {
-      params.set('lang', filters.lang)
-    }
-    if (filters.format) {
-      params.set('format', filters.format)
-    }
-    if (filters.time) {
-      params.set('time', filters.time)
-    }
-    if (filters.premiereOnly) {
-      params.set('premiere', '1')
-    }
+    if (v !== 'movie') params.set('view', v)
+    params.set('week', activeWeek)
+    if (filters.date) params.set('date', filters.date)
+    if (filters.roomId) params.set('room', String(filters.roomId))
+    if (filters.lang) params.set('lang', filters.lang)
+    if (filters.format) params.set('format', filters.format)
+    if (filters.time) params.set('time', filters.time)
+    if (filters.premiereOnly) params.set('premiere', '1')
     const q = params.toString()
     return '/program' + (q ? '?' + q : '')
   }
+
   return (
     <div class='view-toggle'>
-      <a
-        href={viewUrl('movie')}
-        class={`view-btn ${filters.view === 'movie' ? 'active' : ''}`}
-        title='Nach Film'
-      >
-        <Icon name='film' size={14} /> Film
-      </a>
-      <a
-        href={viewUrl('room')}
-        class={`view-btn ${filters.view === 'room' ? 'active' : ''}`}
-        title='Nach Saal'
-      >
-        <Icon name='layout-grid' size={14} /> Saal
-      </a>
-      <a
-        href={viewUrl('schedule')}
-        class={`view-btn ${filters.view === 'schedule' ? 'active' : ''}`}
-        title='Zeitplan'
-      >
-        <Icon name='calendar-days' size={14} /> Zeitplan
-      </a>
+      <ViewBtn href={viewUrl('movie')} active={filters.view === 'movie'} icon='film' title='Nach Film'>
+        Film
+      </ViewBtn>
+      <ViewBtn href={viewUrl('room')} active={filters.view === 'room'} icon='layout-grid' title='Nach Saal'>
+        Saal
+      </ViewBtn>
+      <ViewBtn href={viewUrl('schedule')} active={filters.view === 'schedule'} icon='calendar-days' title='Zeitplan'>
+        Zeitplan
+      </ViewBtn>
     </div>
   )
 }
 
-
-export const ProgramPage: FC<{ program: Program; filters: Filters; historicDays: string[] }> = ({
+export const ProgramPage: FC<{ program: Program; filters: Filters; availableDays: Set<string> }> = ({
   program,
   filters,
-  historicDays
+  availableDays
 }) => {
-  const filtered = applyFilters(program.movies, filters)
+  const today = todayLocal()
+  const activeWeek = filters.week ?? weekContaining(filters.date ?? today)
+  const filtered = applyFilters(program.movies, filters, activeWeek)
   const totalShowings = filtered.reduce((n, m) => n + m.showtimes.length, 0)
 
   return (
@@ -736,14 +684,14 @@ export const ProgramPage: FC<{ program: Program; filters: Filters; historicDays:
             {filtered.length} Film{filtered.length !== 1 ? 'e' : ''}, {totalShowings}{' '}
             Vorstellung{totalShowings !== 1 ? 'en' : ''}
           </span>
-          <ViewToggle filters={filters} />
+          <ViewToggle filters={filters} activeWeek={activeWeek} />
         </div>
       </div>
 
-      <FilterBar program={program} filters={filters} historicDays={historicDays} />
+      <FilterBar program={program} filters={filters} availableDays={availableDays} activeWeek={activeWeek} />
 
       {filtered.length === 0 ? (
-        <p class='empty'>Keine Vorstellungen für diese Filter.</p>
+        <EmptyState>Keine Vorstellungen für diese Filter.</EmptyState>
       ) : filters.view === 'room' ? (
         <ByRoomView movies={filtered} rooms={program.rooms} />
       ) : filters.view === 'schedule' ? (

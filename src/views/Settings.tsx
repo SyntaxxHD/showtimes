@@ -1,6 +1,7 @@
 import type { FC } from 'hono/jsx'
 import type { ApiCinema, CinemaInfo } from '../types.ts'
 import { Icon } from './Icon.tsx'
+import { EmptyState, PageSection } from './components.tsx'
 
 type FetchSchedule = 'on_demand' | 'daily' | 'weekly' | 'monthly'
 
@@ -32,9 +33,7 @@ export const SettingsPage: FC<SettingsPageProps> = ({
     <div class='settings-page'>
       <h1>Einstellungen</h1>
 
-      <section class='settings-section'>
-        <h2>Kino</h2>
-
+      <PageSection class='settings-section' title='Kino'>
         <div class='settings-current'>
           {cinemaInfo.logoWideImageUrl && (
             <img src={cinemaInfo.logoWideImageUrl} alt={cinemaInfo.name} class='settings-logo' />
@@ -70,7 +69,7 @@ export const SettingsPage: FC<SettingsPageProps> = ({
             {searchResults !== null && (
               <div class='settings-results'>
                 {searchResults.length === 0 ? (
-                  <p class='empty'>Keine Ergebnisse.</p>
+                  <EmptyState>Keine Ergebnisse.</EmptyState>
                 ) : (
                   searchResults.map(cinema => (
                     <form method='post' action='/settings/cinema' class='settings-result-row'>
@@ -91,10 +90,9 @@ export const SettingsPage: FC<SettingsPageProps> = ({
             )}
           </>
         )}
-      </section>
+      </PageSection>
 
-      <section class='settings-section'>
-        <h2>Abruf-Zeitplan</h2>
+      <PageSection class='settings-section' title='Abruf-Zeitplan'>
         <p>Wie oft soll das Programm automatisch aktualisiert werden?</p>
 
         <form method='post' action='/settings/schedule' class='settings-schedule-form'>
@@ -113,7 +111,7 @@ export const SettingsPage: FC<SettingsPageProps> = ({
           </div>
           <button type='submit' class='settings-btn'>Speichern</button>
         </form>
-      </section>
+      </PageSection>
     </div>
   )
 }

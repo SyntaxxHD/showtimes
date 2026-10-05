@@ -117,7 +117,18 @@ export function getConfig(key: string): string | null {
 }
 
 export function setConfig(key: string, value: string): void {
-  db.insert(config).values({ key, value }).onConflictDoUpdate({ target: config.key, set: { value } }).run()
+  db
+    .insert(config)
+    .values({ key, value })
+    .onConflictDoUpdate({ target: config.key, set: { value } })
+    .run()
+}
+
+export function getEarliestDay(cinemaId: number): string | null {
+  const row = db.get(
+    sql`SELECT MIN(substr(start_datetime, 1, 10)) AS day FROM showings WHERE cinema_id = ${cinemaId}`
+  ) as { day: string | null } | undefined
+  return row?.day ?? null
 }
 
 export function getHistoricDays(cinemaId: number): string[] {
@@ -207,10 +218,16 @@ export function getProgramFromDb(cinemaId: number, date: string): Program {
   let latestFetchedAt = ''
 
   for (const row of rows) {
-    if (row.fetchedAt > latestFetchedAt) {latestFetchedAt = row.fetchedAt}
+    if (row.fetchedAt > latestFetchedAt) {
+      latestFetchedAt = row.fetchedAt
+    }
 
     if (!roomMap.has(row.roomTableId)) {
-      roomMap.set(row.roomTableId, { id: row.roomTableId, name: row.roomName, seatCount: row.seatCount })
+      roomMap.set(row.roomTableId, {
+        id: row.roomTableId,
+        name: row.roomName,
+        seatCount: row.seatCount
+      })
     }
 
     if (!movieMap.has(row.contentId)) {

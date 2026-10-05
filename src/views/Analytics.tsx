@@ -2,6 +2,7 @@ import type { FC } from 'hono/jsx'
 import { count, max, min, sql, sum } from 'drizzle-orm'
 import { db } from '../db.ts'
 import { contents, rooms, showings } from '../schema.ts'
+import { EmptyState, PageSection, StatTile } from './components.tsx'
 
 const CssBar: FC<{ value: number; max: number; label: string; sub?: string }> = ({
   value,
@@ -47,10 +48,10 @@ export const AnalyticsPage: FC = () => {
     return (
       <div class='analytics-page'>
         <h1>Statistiken</h1>
-        <p class='empty'>
+        <EmptyState>
           Noch keine historischen Daten. Lade das <a href='/program'>Programm</a> einmal,
           um Daten zu sammeln.
-        </p>
+        </EmptyState>
       </div>
     )
   }
@@ -134,35 +135,21 @@ export const AnalyticsPage: FC = () => {
     <div class='analytics-page'>
       <h1>Statistiken</h1>
       <div class='stats-summary'>
-        <div class='stat-tile'>
-          <span class='stat-value'>{totalShowings}</span>
-          <span class='stat-label'>Vorstellungen gesamt</span>
-        </div>
-        <div class='stat-tile'>
-          <span class='stat-value'>{totalMovies}</span>
-          <span class='stat-label'>Verschiedene Filme</span>
-        </div>
-        <div class='stat-tile'>
-          <span class='stat-value'>{firstDate}</span>
-          <span class='stat-label'>Älteste Daten</span>
-        </div>
-        <div class='stat-tile'>
-          <span class='stat-value'>{lastDate}</span>
-          <span class='stat-label'>Aktuellste Daten</span>
-        </div>
+        <StatTile value={totalShowings} label='Vorstellungen gesamt' />
+        <StatTile value={totalMovies} label='Verschiedene Filme' />
+        <StatTile value={firstDate} label='Älteste Daten' />
+        <StatTile value={lastDate} label='Aktuellste Daten' />
       </div>
 
-      <section class='analytics-section'>
-        <h2>Häufigste Filme</h2>
+      <PageSection class='analytics-section' title='Häufigste Filme'>
         <div class='bar-chart'>
           {topMovies.map(m => (
             <CssBar value={m.count} max={maxMovieCount} label={m.name} />
           ))}
         </div>
-      </section>
+      </PageSection>
 
-      <section class='analytics-section'>
-        <h2>Saalauslastung</h2>
+      <PageSection class='analytics-section' title='Saalauslastung'>
         <div class='bar-chart'>
           {roomStats.map(r => (
             <CssBar
@@ -173,10 +160,9 @@ export const AnalyticsPage: FC = () => {
             />
           ))}
         </div>
-      </section>
+      </PageSection>
 
-      <section class='analytics-section'>
-        <h2>Sprachverteilung</h2>
+      <PageSection class='analytics-section' title='Sprachverteilung'>
         <div class='bar-chart'>
           <CssBar value={deCount} max={maxLang} label='Deutsch' />
           <CssBar value={ovCount} max={maxLang} label='OV (Originalfassung)' />
@@ -186,10 +172,9 @@ export const AnalyticsPage: FC = () => {
             label='OmU (Originalfassung mit Untertiteln)'
           />
         </div>
-      </section>
+      </PageSection>
 
-      <section class='analytics-section'>
-        <h2>Programm-Wechsel (letzte 8 Wochen)</h2>
+      <PageSection class='analytics-section' title='Programm-Wechsel (letzte 8 Wochen)'>
         <div class='churn-table'>
           {weeks.map(([week, movies]) => (
             <div class='churn-week'>
@@ -204,7 +189,7 @@ export const AnalyticsPage: FC = () => {
             </div>
           ))}
         </div>
-      </section>
+      </PageSection>
     </div>
   )
 }

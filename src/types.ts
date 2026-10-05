@@ -141,6 +141,7 @@ export interface Program {
 export interface Filters {
   view: 'movie' | 'room' | 'schedule'
   date: string | null // YYYY-MM-DD in Europe/Berlin
+  week: string | null // YYYY-Www e.g. 2025-W40
   roomId: number | null
   lang: 'deu' | 'ov' | 'omu' | null
   format: '3d' | 'dolby' | 'imax' | '4dx' | null

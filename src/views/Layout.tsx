@@ -1,6 +1,7 @@
 import type { FC, PropsWithChildren } from 'hono/jsx'
 import type { CinemaInfo } from '../types.ts'
 import { Icon } from './Icon.tsx'
+import { ExternalLink } from './components.tsx'
 
 interface LayoutProps {
   activePath?: string
@@ -48,7 +49,7 @@ const Layout: FC<PropsWithChildren<LayoutProps>> = ({ activePath, cinemaInfo, ch
           <p>
             Daten von{' '}
             {cinemaInfo.websiteUrl
-              ? <a href={cinemaInfo.websiteUrl} target='_blank' rel='noopener'>{cinemaInfo.name}</a>
+              ? <ExternalLink href={cinemaInfo.websiteUrl}>{cinemaInfo.name}</ExternalLink>
               : cinemaInfo.name}{' '}
             via Cineamo API
           </p>

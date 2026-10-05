@@ -1,6 +1,6 @@
 import { Hono } from 'hono'
 import { serveStatic } from 'hono/bun'
-import { fetchAllCinemas, fetchCinemaInfo, getProgram } from './api.ts'
+import { clearProgramCache, fetchAllCinemas, fetchCinemaInfo, getProgram } from './api.ts'
 import { getConfig, getHistoricDays, getProgramFromDb, setConfig } from './db.ts'
 import type { CinemaInfo, Filters } from './types.ts'
 import Layout from './views/Layout.tsx'
@@ -16,7 +16,7 @@ declare global {
 
 const envCinemaId = process.env.CINEMA_ID ? parseInt(process.env.CINEMA_ID, 10) : null
 const dbCinemaId = getConfig('cinema_id')
-const cinemaId = envCinemaId ?? (dbCinemaId ? parseInt(dbCinemaId, 10) : 1045)
+let cinemaId = envCinemaId ?? (dbCinemaId ? parseInt(dbCinemaId, 10) : 1045)
 globalThis._cinemaIdEnvOverride = envCinemaId !== null
 
 globalThis._cinemaInfo ??= await fetchCinemaInfo(cinemaId)
@@ -27,7 +27,7 @@ function getCinemaInfo(): CinemaInfo {
 
 async function refreshCinemaInfo(id: number): Promise<void> {
   globalThis._cinemaInfo = await fetchCinemaInfo(id)
-  globalThis._programCache = undefined
+  clearProgramCache()
 }
 
 type FetchSchedule = 'on_demand' | 'daily' | 'weekly' | 'monthly'
@@ -43,10 +43,11 @@ function applySchedule(schedule: FetchSchedule): void {
     clearInterval(globalThis._scheduleTimer)
     globalThis._scheduleTimer = undefined
   }
+
   if (schedule !== 'on_demand') {
     globalThis._scheduleTimer = setInterval(() => {
-      globalThis._programCache = undefined
-      getProgram().catch(console.error)
+      clearProgramCache(cinemaId)
+      getProgram(cinemaId).catch(console.error)
     }, SCHEDULE_MS[schedule])
   }
 }
@@ -70,6 +71,7 @@ app.get('/program', async c => {
   const filters: Filters = {
     view,
     date: q['date'] ?? null,
+    week: q['week'] ?? null,
     roomId: q['room'] ? parseInt(q['room'], 10) : null,
     lang: (['deu', 'ov', 'omu'] as const).find(l => l === q['lang']) ?? null,
     format:
@@ -84,11 +86,19 @@ app.get('/program', async c => {
   const program =
     filters.date && filters.date < today
       ? getProgramFromDb(cinemaId, filters.date)
-      : await getProgram()
+      : await getProgram(cinemaId)
+
+  const availableDays = new Set<string>(historicDays)
+  for (const m of program.movies) {
+    for (const s of m.showtimes) {
+      const d = new Date(s.startDatetime).toLocaleDateString('en-CA', { timeZone: 'Europe/Berlin' })
+      availableDays.add(d)
+    }
+  }
 
   return c.html(
     <Layout activePath='program' cinemaInfo={getCinemaInfo()}>
-      <ProgramPage program={program} filters={filters} historicDays={historicDays} />
+      <ProgramPage program={program} filters={filters} availableDays={availableDays} />
     </Layout>
   )
 })
@@ -145,12 +155,15 @@ app.post('/settings/cinema', async c => {
   if (globalThis._cinemaIdEnvOverride) {
     return c.redirect('/settings')
   }
+
   const body = await c.req.parseBody()
   const newId = parseInt(String(body['cinema_id']), 10)
   if (!isNaN(newId)) {
     setConfig('cinema_id', String(newId))
+    cinemaId = newId
     await refreshCinemaInfo(newId)
   }
+
   return c.redirect('/program')
 })
 
@@ -161,6 +174,7 @@ app.post('/settings/schedule', async c => {
     setConfig('fetch_schedule', schedule)
     applySchedule(schedule)
   }
+
   return c.redirect('/settings')
 })
 

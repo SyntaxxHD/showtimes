@@ -33,6 +33,7 @@ export function transform(
 
   for (const s of apiShowings) {
     const content: ApiContent = s._embedded.content
+
     const room = roomMap.get(s.cinemaRoomId)
     const roomName = room?.name ?? `Room ${s.cinemaRoomId}`
 
