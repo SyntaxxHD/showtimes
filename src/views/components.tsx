@@ -9,10 +9,19 @@ interface FilterChipProps {
   children?: unknown
 }
 
-export const FilterChip: FC<FilterChipProps> = ({ href, active, extraClass, children }) => {
+export const FilterChip: FC<FilterChipProps> = ({
+  href,
+  active,
+  extraClass,
+  children
+}) => {
   const cls = ['chip', extraClass, active ? 'active' : ''].filter(Boolean).join(' ')
 
-  return <a href={href} class={cls}>{children}</a>
+  return (
+    <a href={href} class={cls}>
+      {children}
+    </a>
+  )
 }
 
 interface FilterRowProps {
@@ -20,7 +29,11 @@ interface FilterRowProps {
   label: string
 }
 
-export const FilterRow: FC<PropsWithChildren<FilterRowProps>> = ({ icon, label, children }) => (
+export const FilterRow: FC<PropsWithChildren<FilterRowProps>> = ({
+  icon,
+  label,
+  children
+}) => (
   <div class='filter-row'>
     <span class='filter-label'>
       <Icon name={icon} size={13} />
@@ -56,7 +69,9 @@ export const StatTile: FC<StatTileProps> = ({ value, label }) => (
   </div>
 )
 
-export const EmptyState: FC<PropsWithChildren> = ({ children }) => <p class='empty'>{children}</p>
+export const EmptyState: FC<PropsWithChildren> = ({ children }) => (
+  <p class='empty'>{children}</p>
+)
 
 interface ExternalLinkProps {
   href: string
@@ -65,7 +80,9 @@ interface ExternalLinkProps {
 }
 
 export const ExternalLink: FC<ExternalLinkProps> = ({ href, class: cls, children }) => (
-  <a href={href} target='_blank' rel='noopener' class={cls}>{children}</a>
+  <a href={href} target='_blank' rel='noopener' class={cls}>
+    {children}
+  </a>
 )
 
 interface PageSectionProps {
@@ -73,7 +90,11 @@ interface PageSectionProps {
   class?: string
 }
 
-export const PageSection: FC<PropsWithChildren<PageSectionProps>> = ({ title, class: cls, children }) => (
+export const PageSection: FC<PropsWithChildren<PageSectionProps>> = ({
+  title,
+  class: cls,
+  children
+}) => (
   <section class={cls}>
     <h2>{title}</h2>
     {children}

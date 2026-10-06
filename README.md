@@ -26,7 +26,7 @@ services:
   showtimes:
     image: ghcr.io/syntaxxhd/showtimes:latest
     ports:
-      - "3000:3000"
+      - '3000:3000'
     volumes:
       - showtimes-data:/app/data
     environment:

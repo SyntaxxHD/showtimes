@@ -25,13 +25,16 @@ export const db = drizzle(globalThis._db, { schema })
 
 migrate(db, { migrationsFolder: 'drizzle' })
 
-export function persistProgram(cinemaId: number, roomList: Room[], movies: Movie[]): void {
+export function persistProgram(
+  cinemaId: number,
+  roomList: Room[],
+  movies: Movie[]
+): void {
   const fetchedAt = new Date().toISOString()
 
   db.transaction(tx => {
     for (const r of roomList) {
-      tx
-        .insert(rooms)
+      tx.insert(rooms)
         .values({ id: r.id, name: r.name, seatCount: r.seatCount, cinemaId })
         .onConflictDoUpdate({
           target: rooms.id,
@@ -41,8 +44,7 @@ export function persistProgram(cinemaId: number, roomList: Room[], movies: Movie
     }
 
     for (const m of movies) {
-      tx
-        .insert(contents)
+      tx.insert(contents)
         .values({
           id: m.contentId,
           name: m.name,
@@ -72,8 +74,7 @@ export function persistProgram(cinemaId: number, roomList: Room[], movies: Movie
         .run()
 
       for (const s of m.showtimes) {
-        tx
-          .insert(showings)
+        tx.insert(showings)
           .values({
             id: s.showingId,
             contentId: m.contentId,
@@ -117,8 +118,7 @@ export function getConfig(key: string): string | null {
 }
 
 export function setConfig(key: string, value: string): void {
-  db
-    .insert(config)
+  db.insert(config)
     .values({ key, value })
     .onConflictDoUpdate({ target: config.key, set: { value } })
     .run()

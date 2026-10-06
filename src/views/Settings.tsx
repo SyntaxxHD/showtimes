@@ -36,7 +36,11 @@ export const SettingsPage: FC<SettingsPageProps> = ({
       <PageSection class='settings-section' title='Kino'>
         <div class='settings-current'>
           {cinemaInfo.logoWideImageUrl && (
-            <img src={cinemaInfo.logoWideImageUrl} alt={cinemaInfo.name} class='settings-logo' />
+            <img
+              src={cinemaInfo.logoWideImageUrl}
+              alt={cinemaInfo.name}
+              class='settings-logo'
+            />
           )}
           <div>
             <div class='settings-cinema-name'>{cinemaInfo.name}</div>
@@ -46,12 +50,16 @@ export const SettingsPage: FC<SettingsPageProps> = ({
 
         {envOverride ? (
           <p class='settings-env-notice'>
-            <Icon name='lock' size={14} />
-            {' '}Konfiguriert via Umgebungsvariable <code>CINEMA_ID={cinemaId}</code>. Die Einstellungen hier haben keinen Effekt.
+            <Icon name='lock' size={14} /> Konfiguriert via Umgebungsvariable{' '}
+            <code>CINEMA_ID={cinemaId}</code>. Die Einstellungen hier haben keinen Effekt.
           </p>
         ) : (
           <>
-            <form method='post' action='/settings/cinema-search' class='settings-search-form'>
+            <form
+              method='post'
+              action='/settings/cinema-search'
+              class='settings-search-form'
+            >
               <input
                 type='text'
                 name='query'
@@ -72,7 +80,11 @@ export const SettingsPage: FC<SettingsPageProps> = ({
                   <EmptyState>Keine Ergebnisse.</EmptyState>
                 ) : (
                   searchResults.map(cinema => (
-                    <form method='post' action='/settings/cinema' class='settings-result-row'>
+                    <form
+                      method='post'
+                      action='/settings/cinema'
+                      class='settings-result-row'
+                    >
                       <input type='hidden' name='cinema_id' value={String(cinema.id)} />
                       <span class='settings-result-name'>{cinema.name}</span>
                       <span class='settings-result-city'>{cinema.city}</span>
@@ -109,7 +121,9 @@ export const SettingsPage: FC<SettingsPageProps> = ({
               </label>
             ))}
           </div>
-          <button type='submit' class='settings-btn'>Speichern</button>
+          <button type='submit' class='settings-btn'>
+            Speichern
+          </button>
         </form>
       </PageSection>
     </div>

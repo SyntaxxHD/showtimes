@@ -55,11 +55,17 @@ function formatDayParts(dayKey: string): { weekday: string; date: string } {
   const tomorrowKey = tomorrow.toLocaleDateString('en-CA')
 
   if (dayKey === today) {
-    return { weekday: 'Heute', date: d.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit' }) }
+    return {
+      weekday: 'Heute',
+      date: d.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit' })
+    }
   }
 
   if (dayKey === tomorrowKey) {
-    return { weekday: 'Morgen', date: d.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit' }) }
+    return {
+      weekday: 'Morgen',
+      date: d.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit' })
+    }
   }
 
   return {
@@ -136,7 +142,8 @@ function weekContaining(day: string): string {
   const jan4 = new Date(year, 0, 4)
   const startOfWeek1 = new Date(jan4)
   startOfWeek1.setDate(jan4.getDate() - (jan4.getDay() === 0 ? 6 : jan4.getDay() - 1))
-  const weekNum = Math.round((d.getTime() - startOfWeek1.getTime()) / (7 * 24 * 60 * 60 * 1000)) + 1
+  const weekNum =
+    Math.round((d.getTime() - startOfWeek1.getTime()) / (7 * 24 * 60 * 60 * 1000)) + 1
   return `${year}-W${String(weekNum).padStart(2, '0')}`
 }
 
@@ -177,7 +184,11 @@ function weekDays(week: string): string[] {
   return days
 }
 
-function showtimeMatchesFilters(s: Showtime, filters: Filters, activeWeek: string): boolean {
+function showtimeMatchesFilters(
+  s: Showtime,
+  filters: Filters,
+  activeWeek: string
+): boolean {
   if (s.state === 'cancelled') {
     return false
   }
@@ -284,10 +295,13 @@ const MovieCard: FC<{ movie: Movie }> = ({ movie: m }) => {
     <article class='movie-card'>
       <div class='movie-body'>
         <div class='movie-poster'>
-          {m.posterImageUrl
-            ? <img src={m.posterImageUrl} alt={m.name} loading='lazy' />
-            : <div class='movie-poster-placeholder'><Icon name='film' size={32} /></div>
-          }
+          {m.posterImageUrl ? (
+            <img src={m.posterImageUrl} alt={m.name} loading='lazy' />
+          ) : (
+            <div class='movie-poster-placeholder'>
+              <Icon name='film' size={32} />
+            </div>
+          )}
         </div>
         <div class='movie-info'>
           <h2 class='movie-title'>{m.name}</h2>
@@ -350,7 +364,9 @@ const ByRoomView: FC<{ movies: Movie[]; rooms: Room[] }> = ({ movies, rooms }) =
             <h2 class={`room-heading ${roomColorClass(room.name)}`}>
               <span class='room-dot'></span>
               {room.name}
-              {room.seatCount != null && <small class='room-seats'>{room.seatCount} Plätze</small>}
+              {room.seatCount != null && (
+                <small class='room-seats'>{room.seatCount} Plätze</small>
+              )}
             </h2>
             <div class='room-showings'>
               {days.map(([dayKey, dayEntries]) => (
@@ -414,69 +430,80 @@ const ScheduleView: FC<{ movies: Movie[]; rooms: Room[] }> = ({ movies, rooms })
   return (
     <div class='schedule-outer'>
       <div class='schedule-inner'>
-      <div class='schedule-header-row'>
-        <div class='schedule-time-gutter' />
-        {activeRooms.map(room => (
-          <div class={`schedule-col-header ${roomColorClass(room.name)}`}>
-            {room.name}
-          </div>
-        ))}
-      </div>
-      <div
-        class='schedule-grid'
-        style={`--rooms: ${activeRooms.length}; --total-min: ${totalMinutes}`}
-      >
-        <div class='schedule-time-axis' style={`height: ${totalMinutes * pxPerMin}px`}>
-          {Array.from({ length: endHour - startHour + 1 }, (_, i) => (
-            <div
-              class='time-tick'
-              style={`top: ${i * 60 * pxPerMin}px; transform: translateY(${i === 0 ? '0' : '-50%'})`}
-            >
-              {String(startHour + i).padStart(2, '0')}:00
+        <div class='schedule-header-row'>
+          <div class='schedule-time-gutter' />
+          {activeRooms.map(room => (
+            <div class={`schedule-col-header ${roomColorClass(room.name)}`}>
+              {room.name}
             </div>
           ))}
         </div>
-        {activeRooms.map(room => (
-          <div class={`schedule-column ${roomColClass(room.name)}`}>
-            <div class='schedule-col-body' style={`height: ${totalMinutes * pxPerMin}px`}>
-              {(byRoom.get(room.id) ?? []).filter(({ s }) => s.endDatetime != null).map(({ movie: m, s }) => {
-                const startMin =
-                  getHour(s.startDatetime) * 60 +
-                  toLocalDate(s.startDatetime).getMinutes() -
-                  startHour * 60
-                const endD = toLocalDate(s.endDatetime!)
-                const endMin = endD.getHours() * 60 + endD.getMinutes() - startHour * 60
-                const height = Math.max((endMin - startMin) * pxPerMin, 24)
-                return (
-                  <div
-                    class='schedule-block'
-                    style={`top: ${startMin * pxPerMin}px; height: ${height}px`}
-                    title={`${m.name} (${formatTime(s.startDatetime)}–${formatTime(s.endDatetime!)})`}
-                  >
-                    {s.ticketUrl ? (
-                      <ExternalLink href={s.ticketUrl} class='schedule-block-link'>
-                        {m.name}
-                        <span class='sched-time'>{formatTime(s.startDatetime)}</span>
-                      </ExternalLink>
-                    ) : (
-                      <span>
-                        {m.name}
-                        <span class='sched-time'>{formatTime(s.startDatetime)}</span>
-                      </span>
-                    )}
-                  </div>
-                )
-              })}
-            </div>
+        <div
+          class='schedule-grid'
+          style={`--rooms: ${activeRooms.length}; --total-min: ${totalMinutes}`}
+        >
+          <div class='schedule-time-axis' style={`height: ${totalMinutes * pxPerMin}px`}>
+            {Array.from({ length: endHour - startHour + 1 }, (_, i) => (
+              <div
+                class='time-tick'
+                style={`top: ${i * 60 * pxPerMin}px; transform: translateY(${i === 0 ? '0' : '-50%'})`}
+              >
+                {String(startHour + i).padStart(2, '0')}:00
+              </div>
+            ))}
           </div>
-        ))}
-      </div>
+          {activeRooms.map(room => (
+            <div class={`schedule-column ${roomColClass(room.name)}`}>
+              <div
+                class='schedule-col-body'
+                style={`height: ${totalMinutes * pxPerMin}px`}
+              >
+                {(byRoom.get(room.id) ?? [])
+                  .filter(({ s }) => s.endDatetime != null)
+                  .map(({ movie: m, s }) => {
+                    const startMin =
+                      getHour(s.startDatetime) * 60 +
+                      toLocalDate(s.startDatetime).getMinutes() -
+                      startHour * 60
+                    const endD = toLocalDate(s.endDatetime!)
+                    const endMin =
+                      endD.getHours() * 60 + endD.getMinutes() - startHour * 60
+                    const height = Math.max((endMin - startMin) * pxPerMin, 24)
+                    return (
+                      <div
+                        class='schedule-block'
+                        style={`top: ${startMin * pxPerMin}px; height: ${height}px`}
+                        title={`${m.name} (${formatTime(s.startDatetime)}–${formatTime(s.endDatetime!)})`}
+                      >
+                        {s.ticketUrl ? (
+                          <ExternalLink href={s.ticketUrl} class='schedule-block-link'>
+                            {m.name}
+                            <span class='sched-time'>{formatTime(s.startDatetime)}</span>
+                          </ExternalLink>
+                        ) : (
+                          <span>
+                            {m.name}
+                            <span class='sched-time'>{formatTime(s.startDatetime)}</span>
+                          </span>
+                        )}
+                      </div>
+                    )
+                  })}
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   )
 }
 
-const FilterBar: FC<{ program: Program; filters: Filters; availableDays: Set<string>; activeWeek: string }> = ({ program, filters, availableDays, activeWeek }) => {
+const FilterBar: FC<{
+  program: Program
+  filters: Filters
+  availableDays: Set<string>
+  activeWeek: string
+}> = ({ program, filters, availableDays, activeWeek }) => {
   const days = weekDays(activeWeek)
 
   const langs = new Set<string>()
@@ -493,26 +520,45 @@ const FilterBar: FC<{ program: Program; filters: Filters; availableDays: Set<str
       } else {
         langs.add('deu')
       }
-      if (s.is3D) has3D = true
-      if (s.isDolbyAtmos) hasDolby = true
-      if (s.isImax) hasImax = true
-      if (s.is4DX) has4DX = true
+      if (s.is3D) {
+        has3D = true
+      }
+      if (s.isDolbyAtmos) {
+        hasDolby = true
+      }
+      if (s.isImax) {
+        hasImax = true
+      }
+      if (s.is4DX) {
+        has4DX = true
+      }
     }
   }
 
   function filterUrl(overrides: Partial<Record<string, string | null>>): string {
     const params = new URLSearchParams()
     const p = (k: string, v: string | null | undefined) => {
-      if (v) params.set(k, v)
+      if (v) {
+        params.set(k, v)
+      }
     }
     p('view', filters.view !== 'movie' ? filters.view : null)
     p('week', overrides.week !== undefined ? overrides.week : activeWeek)
     p('date', overrides.date !== undefined ? overrides.date : filters.date)
-    p('room', overrides.room !== undefined ? overrides.room : filters.roomId ? String(filters.roomId) : null)
+    p(
+      'room',
+      overrides.room !== undefined
+        ? overrides.room
+        : filters.roomId
+          ? String(filters.roomId)
+          : null
+    )
     p('lang', overrides.lang !== undefined ? overrides.lang : filters.lang)
     p('format', overrides.format !== undefined ? overrides.format : filters.format)
     p('time', overrides.time !== undefined ? overrides.time : filters.time)
-    if (filters.premiereOnly) params.set('premiere', '1')
+    if (filters.premiereOnly) {
+      params.set('premiere', '1')
+    }
     const q = params.toString()
     return '/program' + (q ? '?' + q : '')
   }
@@ -521,7 +567,13 @@ const FilterBar: FC<{ program: Program; filters: Filters; availableDays: Set<str
     <div class='filter-bar'>
       <FilterRow icon='calendar-days' label='Tag'>
         <div class='day-strip'>
-          <a href={filterUrl({ week: prevWeek(activeWeek), date: null })} class='week-arrow' aria-label='Vorherige Woche'>&#8249;</a>
+          <a
+            href={filterUrl({ week: prevWeek(activeWeek), date: null })}
+            class='week-arrow'
+            aria-label='Vorherige Woche'
+          >
+            &#8249;
+          </a>
           <a
             href={filterUrl({ date: null })}
             class={`day-chip ${!filters.date ? 'active' : ''}`}
@@ -541,7 +593,13 @@ const FilterBar: FC<{ program: Program; filters: Filters; availableDays: Set<str
               </a>
             )
           })}
-          <a href={filterUrl({ week: nextWeek(activeWeek), date: null })} class='week-arrow' aria-label='Nächste Woche'>&#8250;</a>
+          <a
+            href={filterUrl({ week: nextWeek(activeWeek), date: null })}
+            class='week-arrow'
+            aria-label='Nächste Woche'
+          >
+            &#8250;
+          </a>
         </div>
       </FilterRow>
 
@@ -592,22 +650,34 @@ const FilterBar: FC<{ program: Program; filters: Filters; availableDays: Set<str
               Alle
             </FilterChip>
             {has3D && (
-              <FilterChip href={filterUrl({ format: '3d' })} active={filters.format === '3d'}>
+              <FilterChip
+                href={filterUrl({ format: '3d' })}
+                active={filters.format === '3d'}
+              >
                 3D
               </FilterChip>
             )}
             {hasDolby && (
-              <FilterChip href={filterUrl({ format: 'dolby' })} active={filters.format === 'dolby'}>
+              <FilterChip
+                href={filterUrl({ format: 'dolby' })}
+                active={filters.format === 'dolby'}
+              >
                 Dolby Atmos
               </FilterChip>
             )}
             {hasImax && (
-              <FilterChip href={filterUrl({ format: 'imax' })} active={filters.format === 'imax'}>
+              <FilterChip
+                href={filterUrl({ format: 'imax' })}
+                active={filters.format === 'imax'}
+              >
                 IMAX
               </FilterChip>
             )}
             {has4DX && (
-              <FilterChip href={filterUrl({ format: '4dx' })} active={filters.format === '4dx'}>
+              <FilterChip
+                href={filterUrl({ format: '4dx' })}
+                active={filters.format === '4dx'}
+              >
                 4DX
               </FilterChip>
             )}
@@ -620,13 +690,22 @@ const FilterBar: FC<{ program: Program; filters: Filters; availableDays: Set<str
           <FilterChip href={filterUrl({ time: null })} active={!filters.time}>
             Alle
           </FilterChip>
-          <FilterChip href={filterUrl({ time: 'morning' })} active={filters.time === 'morning'}>
+          <FilterChip
+            href={filterUrl({ time: 'morning' })}
+            active={filters.time === 'morning'}
+          >
             Vormittag (&lt;13 Uhr)
           </FilterChip>
-          <FilterChip href={filterUrl({ time: 'afternoon' })} active={filters.time === 'afternoon'}>
+          <FilterChip
+            href={filterUrl({ time: 'afternoon' })}
+            active={filters.time === 'afternoon'}
+          >
             Nachmittag (13–18 Uhr)
           </FilterChip>
-          <FilterChip href={filterUrl({ time: 'evening' })} active={filters.time === 'evening'}>
+          <FilterChip
+            href={filterUrl({ time: 'evening' })}
+            active={filters.time === 'evening'}
+          >
             Abend (&gt;18 Uhr)
           </FilterChip>
         </div>
@@ -635,41 +714,73 @@ const FilterBar: FC<{ program: Program; filters: Filters; availableDays: Set<str
   )
 }
 
-const ViewToggle: FC<{ filters: Filters; activeWeek: string }> = ({ filters, activeWeek }) => {
+const ViewToggle: FC<{ filters: Filters; activeWeek: string }> = ({
+  filters,
+  activeWeek
+}) => {
   function viewUrl(v: string): string {
     const params = new URLSearchParams()
-    if (v !== 'movie') params.set('view', v)
+    if (v !== 'movie') {
+      params.set('view', v)
+    }
     params.set('week', activeWeek)
-    if (filters.date) params.set('date', filters.date)
-    if (filters.roomId) params.set('room', String(filters.roomId))
-    if (filters.lang) params.set('lang', filters.lang)
-    if (filters.format) params.set('format', filters.format)
-    if (filters.time) params.set('time', filters.time)
-    if (filters.premiereOnly) params.set('premiere', '1')
+    if (filters.date) {
+      params.set('date', filters.date)
+    }
+    if (filters.roomId) {
+      params.set('room', String(filters.roomId))
+    }
+    if (filters.lang) {
+      params.set('lang', filters.lang)
+    }
+    if (filters.format) {
+      params.set('format', filters.format)
+    }
+    if (filters.time) {
+      params.set('time', filters.time)
+    }
+    if (filters.premiereOnly) {
+      params.set('premiere', '1')
+    }
     const q = params.toString()
     return '/program' + (q ? '?' + q : '')
   }
 
   return (
     <div class='view-toggle'>
-      <ViewBtn href={viewUrl('movie')} active={filters.view === 'movie'} icon='film' title='Nach Film'>
+      <ViewBtn
+        href={viewUrl('movie')}
+        active={filters.view === 'movie'}
+        icon='film'
+        title='Nach Film'
+      >
         Film
       </ViewBtn>
-      <ViewBtn href={viewUrl('room')} active={filters.view === 'room'} icon='layout-grid' title='Nach Saal'>
+      <ViewBtn
+        href={viewUrl('room')}
+        active={filters.view === 'room'}
+        icon='layout-grid'
+        title='Nach Saal'
+      >
         Saal
       </ViewBtn>
-      <ViewBtn href={viewUrl('schedule')} active={filters.view === 'schedule'} icon='calendar-days' title='Zeitplan'>
+      <ViewBtn
+        href={viewUrl('schedule')}
+        active={filters.view === 'schedule'}
+        icon='calendar-days'
+        title='Zeitplan'
+      >
         Zeitplan
       </ViewBtn>
     </div>
   )
 }
 
-export const ProgramPage: FC<{ program: Program; filters: Filters; availableDays: Set<string> }> = ({
-  program,
-  filters,
-  availableDays
-}) => {
+export const ProgramPage: FC<{
+  program: Program
+  filters: Filters
+  availableDays: Set<string>
+}> = ({ program, filters, availableDays }) => {
   const today = todayLocal()
   const activeWeek = filters.week ?? weekContaining(filters.date ?? today)
   const filtered = applyFilters(program.movies, filters, activeWeek)
@@ -688,7 +799,12 @@ export const ProgramPage: FC<{ program: Program; filters: Filters; availableDays
         </div>
       </div>
 
-      <FilterBar program={program} filters={filters} availableDays={availableDays} activeWeek={activeWeek} />
+      <FilterBar
+        program={program}
+        filters={filters}
+        availableDays={availableDays}
+        activeWeek={activeWeek}
+      />
 
       {filtered.length === 0 ? (
         <EmptyState>Keine Vorstellungen für diese Filter.</EmptyState>

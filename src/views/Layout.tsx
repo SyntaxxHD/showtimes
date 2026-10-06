@@ -8,7 +8,11 @@ interface LayoutProps {
   cinemaInfo: CinemaInfo
 }
 
-const Layout: FC<PropsWithChildren<LayoutProps>> = ({ activePath, cinemaInfo, children }) => {
+const Layout: FC<PropsWithChildren<LayoutProps>> = ({
+  activePath,
+  cinemaInfo,
+  children
+}) => {
   const pageTitle = cinemaInfo.name
   return (
     <html lang='de'>
@@ -25,9 +29,16 @@ const Layout: FC<PropsWithChildren<LayoutProps>> = ({ activePath, cinemaInfo, ch
       <body>
         <header class='site-header'>
           <a href='/program' class='site-logo' aria-label={`${cinemaInfo.name}`}>
-            {cinemaInfo.logoWideImageUrl
-              ? <img src={cinemaInfo.logoWideImageUrl} alt={cinemaInfo.name} class='site-logo-img' height='48' />
-              : cinemaInfo.shortName}
+            {cinemaInfo.logoWideImageUrl ? (
+              <img
+                src={cinemaInfo.logoWideImageUrl}
+                alt={cinemaInfo.name}
+                class='site-logo-img'
+                height='48'
+              />
+            ) : (
+              cinemaInfo.shortName
+            )}
           </a>
           <nav class='site-nav'>
             <a href='/program' class={activePath === 'program' ? 'active' : ''}>
@@ -48,9 +59,11 @@ const Layout: FC<PropsWithChildren<LayoutProps>> = ({ activePath, cinemaInfo, ch
         <footer class='site-footer'>
           <p>
             Daten von{' '}
-            {cinemaInfo.websiteUrl
-              ? <ExternalLink href={cinemaInfo.websiteUrl}>{cinemaInfo.name}</ExternalLink>
-              : cinemaInfo.name}{' '}
+            {cinemaInfo.websiteUrl ? (
+              <ExternalLink href={cinemaInfo.websiteUrl}>{cinemaInfo.name}</ExternalLink>
+            ) : (
+              cinemaInfo.name
+            )}{' '}
             via Cineamo API
           </p>
         </footer>

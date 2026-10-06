@@ -26,15 +26,9 @@ const CssBar: FC<{ value: number; max: number; label: string; sub?: string }> = 
 }
 
 export const AnalyticsPage: FC = () => {
-  const [{ totalShowings }] = db
-    .select({ totalShowings: count() })
-    .from(showings)
-    .all()
+  const [{ totalShowings }] = db.select({ totalShowings: count() }).from(showings).all()
 
-  const [{ totalMovies }] = db
-    .select({ totalMovies: count() })
-    .from(contents)
-    .all()
+  const [{ totalMovies }] = db.select({ totalMovies: count() }).from(contents).all()
 
   const [dateRange] = db
     .select({

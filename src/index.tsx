@@ -91,7 +91,9 @@ app.get('/program', async c => {
   const availableDays = new Set<string>(historicDays)
   for (const m of program.movies) {
     for (const s of m.showtimes) {
-      const d = new Date(s.startDatetime).toLocaleDateString('en-CA', { timeZone: 'Europe/Berlin' })
+      const d = new Date(s.startDatetime).toLocaleDateString('en-CA', {
+        timeZone: 'Europe/Berlin'
+      })
       availableDays.add(d)
     }
   }
@@ -129,11 +131,14 @@ app.get('/settings', c => {
 
 app.post('/settings/cinema-search', async c => {
   const body = await c.req.parseBody()
-  const query = String(body['query'] ?? '').trim().toLowerCase()
+  const query = String(body['query'] ?? '')
+    .trim()
+    .toLowerCase()
   const allCinemas = await fetchAllCinemas()
   const results = query
     ? allCinemas.filter(
-        cm => cm.name.toLowerCase().includes(query) || cm.city.toLowerCase().includes(query)
+        cm =>
+          cm.name.toLowerCase().includes(query) || cm.city.toLowerCase().includes(query)
       )
     : allCinemas.slice(0, 20)
   const schedule = (getConfig('fetch_schedule') ?? 'on_demand') as FetchSchedule

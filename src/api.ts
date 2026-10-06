@@ -1,4 +1,11 @@
-import type { ApiCinema, ApiCinemaRoom, ApiPage, ApiShowing, CinemaInfo, Program } from './types.ts'
+import type {
+  ApiCinema,
+  ApiCinemaRoom,
+  ApiPage,
+  ApiShowing,
+  CinemaInfo,
+  Program
+} from './types.ts'
 import { transform } from './transform.ts'
 import { persistProgram } from './db.ts'
 
@@ -62,7 +69,9 @@ interface ImagePaths {
   posterPath?: string
 }
 
-async function fetchImagePathsForContent(id: number): Promise<[number, ImagePaths] | null> {
+async function fetchImagePathsForContent(
+  id: number
+): Promise<[number, ImagePaths] | null> {
   try {
     const res = await fetch(`${BASE}/contents/${id}`)
     if (!res.ok) {
@@ -135,14 +144,20 @@ export async function getProgram(cinemaId: number): Promise<Program> {
     return cached.data
   }
 
-  const [rooms, showings] = await Promise.all([fetchRooms(cinemaId), fetchShowings(cinemaId)])
+  const [rooms, showings] = await Promise.all([
+    fetchRooms(cinemaId),
+    fetchShowings(cinemaId)
+  ])
   const contentIds = [...new Set(showings.map(s => s.contentId))]
   const imageMap = await fetchImagePaths(contentIds)
   const program = transform(rooms, showings, imageMap)
 
   persistProgram(cinemaId, program.rooms, program.movies)
 
-  globalThis._programCache.set(cinemaId, { data: program, expiresAt: Date.now() + CACHE_TTL_MS })
+  globalThis._programCache.set(cinemaId, {
+    data: program,
+    expiresAt: Date.now() + CACHE_TTL_MS
+  })
 
   return program
 }

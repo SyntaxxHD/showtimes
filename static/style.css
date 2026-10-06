@@ -297,7 +297,6 @@ p {
   align-items: stretch;
 }
 
-
 .day-chip {
   scroll-snap-align: start;
   flex: 1;
