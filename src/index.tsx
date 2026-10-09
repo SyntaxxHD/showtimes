@@ -77,6 +77,7 @@ app.get('/program', async c => {
     view,
     date: q['date'] ?? null,
     week: q['week'] ?? null,
+    offset: parseInt(q['offset'] ?? '0', 10) || 0,
     roomId: q['room'] ? parseInt(q['room'], 10) : null,
     lang: (['deu', 'ov', 'omu'] as const).find(l => l === q['lang']) ?? null,
     format:

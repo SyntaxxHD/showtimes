@@ -288,6 +288,28 @@ p {
   display: none;
 }
 
+.week-arrow {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.3rem 0.55rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  color: var(--text-dim);
+  font-size: 1.1rem;
+  line-height: 1;
+  flex-shrink: 0;
+  align-self: stretch;
+  text-decoration: none;
+  transition: all 0.15s;
+}
+
+.week-arrow:hover {
+  color: var(--text);
+  border-color: var(--text-dim);
+}
+
 .day-chip {
   scroll-snap-align: start;
   flex-shrink: 0;

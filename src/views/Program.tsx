@@ -507,7 +507,10 @@ const FilterBar: FC<{
   activeWeek: string
 }> = ({ program, filters, availableDays, activeWeek }) => {
   const today = todayLocal()
-  const allDays = dateRange(addDays(today, -14), addDays(today, 21))
+  const allDays = dateRange(
+    addDays(today, -14 + filters.offset * 36),
+    addDays(today, 21 + filters.offset * 36)
+  )
 
   const langs = new Set<string>()
   let has3D = false,
@@ -562,6 +565,13 @@ const FilterBar: FC<{
     if (filters.premiereOnly) {
       params.set('premiere', '1')
     }
+    const newOffset =
+      overrides.offset !== undefined
+        ? parseInt(overrides.offset ?? '0', 10) || 0
+        : filters.offset
+    if (newOffset !== 0) {
+      params.set('offset', String(newOffset))
+    }
     const q = params.toString()
     return '/program' + (q ? '?' + q : '')
   }
@@ -569,7 +579,7 @@ const FilterBar: FC<{
   return (
     <div class='filter-bar'>
       <FilterRow icon='calendar-days' label='Tag'>
-        <div class='day-strip-outer'>
+        <div class='day-strip-outer' data-offset={String(filters.offset)}>
           <a
             href={filterUrl({ date: null, week: null })}
             class={`day-chip ${!filters.date ? 'active' : ''}`}
@@ -581,6 +591,13 @@ const FilterBar: FC<{
             class={`day-chip ${filters.date === today ? 'active' : ''}`}
           >
             <span class='day-chip-weekday'>Heute</span>
+          </a>
+          <a
+            href={filterUrl({ offset: String(filters.offset - 1), date: null })}
+            class='week-arrow'
+            aria-label='Zurückblättern'
+          >
+            &#8249;
           </a>
           <div class='day-strip'>
             {allDays.map(d => {
@@ -597,6 +614,13 @@ const FilterBar: FC<{
               )
             })}
           </div>
+          <a
+            href={filterUrl({ offset: String(filters.offset + 1), date: null })}
+            class='week-arrow'
+            aria-label='Vorblättern'
+          >
+            &#8250;
+          </a>
         </div>
       </FilterRow>
 
