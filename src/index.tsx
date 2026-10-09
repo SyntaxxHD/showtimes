@@ -1,5 +1,6 @@
 import { Hono } from 'hono'
-import { serveStatic } from 'hono/bun'
+import { compress } from 'hono/compress'
+import { serveStatic } from '@hono/bun'
 import { clearProgramCache, fetchAllCinemas, fetchCinemaInfo, getProgram } from './api.ts'
 import {
   addPushSubscription,
@@ -88,9 +89,22 @@ function applySchedule(schedule: FetchSchedule): void {
 const currentSchedule = (getConfig('fetch_schedule') ?? 'on_demand') as FetchSchedule
 applySchedule(currentSchedule)
 
+const dayKeyFmt = new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Berlin' })
+
 const app = new Hono()
 
-app.use('/static/*', serveStatic({ root: './' }))
+app.use(compress())
+app.use(
+  '/static/*',
+  serveStatic({
+    root: './',
+    onFound: (_path, c) => {
+      if (process.env.NODE_ENV === 'production') {
+        c.header('Cache-Control', 'public, max-age=86400')
+      }
+    }
+  })
+)
 
 app.get('/', c => c.redirect('/program'))
 
@@ -128,10 +142,7 @@ app.get('/program', async c => {
   const availableDays = new Set<string>(historicDays)
   for (const m of program.movies) {
     for (const s of m.showtimes) {
-      const d = new Date(s.startDatetime).toLocaleDateString('en-CA', {
-        timeZone: 'Europe/Berlin'
-      })
-      availableDays.add(d)
+      availableDays.add(dayKeyFmt.format(new Date(s.startDatetime)))
     }
   }
 

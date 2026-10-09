@@ -997,12 +997,24 @@ p {
   }
 
   .bar-row {
-    grid-template-columns: 1fr;
+    grid-template-columns: 1fr auto;
+    grid-template-rows: auto auto;
   }
 
-  .bar-track,
+  .bar-label {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
   .bar-value {
-    display: none;
+    grid-column: 2;
+    grid-row: 1;
+  }
+
+  .bar-track {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    height: 0.35rem;
   }
 
   .movie-detail-hero {

@@ -12,78 +12,68 @@ import {
 } from './components.tsx'
 
 const TZ = 'Europe/Berlin'
-
-function toLocalDate(iso: string): Date {
-  return new Date(new Date(iso).toLocaleString('en-US', { timeZone: TZ }))
-}
+const dayKeyFmt = new Intl.DateTimeFormat('en-CA', { timeZone: TZ })
+const timeFmt = new Intl.DateTimeFormat('de-DE', { timeZone: TZ, hour: '2-digit', minute: '2-digit' })
+const hourFmt = new Intl.DateTimeFormat('en-US', { timeZone: TZ, hour: 'numeric', hour12: false })
+const schedTimeFmt = new Intl.DateTimeFormat('en-US', {
+  timeZone: TZ,
+  hour: 'numeric',
+  minute: '2-digit',
+  hour12: false
+})
+const weekdayFmt = new Intl.DateTimeFormat('de-DE', { timeZone: TZ, weekday: 'short' })
+const shortDateFmt = new Intl.DateTimeFormat('de-DE', { timeZone: TZ, day: '2-digit', month: '2-digit' })
+const longDateFmt = new Intl.DateTimeFormat('de-DE', {
+  timeZone: TZ,
+  weekday: 'short',
+  day: '2-digit',
+  month: '2-digit'
+})
 
 export function formatTime(iso: string): string {
-  return new Date(iso).toLocaleTimeString('de-DE', {
-    hour: '2-digit',
-    minute: '2-digit',
-    timeZone: TZ
-  })
+  return timeFmt.format(new Date(iso))
 }
 
 export function formatDayLabel(dayKey: string): string {
-  const d = new Date(dayKey + 'T12:00:00')
   const today = todayLocal()
-  const tomorrow = new Date(today)
-  tomorrow.setDate(tomorrow.getDate() + 1)
-  const tomorrowKey = tomorrow.toLocaleDateString('en-CA')
-
   if (dayKey === today) {
     return 'Heute'
   }
-
-  if (dayKey === tomorrowKey) {
+  if (dayKey === addDays(today, 1)) {
     return 'Morgen'
   }
-
-  return d.toLocaleDateString('de-DE', {
-    weekday: 'short',
-    day: '2-digit',
-    month: '2-digit'
-  })
+  return longDateFmt.format(new Date(dayKey + 'T12:00:00'))
 }
 
 function formatDayParts(dayKey: string): { weekday: string; date: string } {
   const d = new Date(dayKey + 'T12:00:00')
   const today = todayLocal()
-  const tomorrow = new Date(today)
-  tomorrow.setDate(tomorrow.getDate() + 1)
-  const tomorrowKey = tomorrow.toLocaleDateString('en-CA')
-
   if (dayKey === today) {
-    return {
-      weekday: 'Heute',
-      date: d.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit' })
-    }
+    return { weekday: 'Heute', date: shortDateFmt.format(d) }
   }
-
-  if (dayKey === tomorrowKey) {
-    return {
-      weekday: 'Morgen',
-      date: d.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit' })
-    }
+  if (dayKey === addDays(today, 1)) {
+    return { weekday: 'Morgen', date: shortDateFmt.format(d) }
   }
-
-  return {
-    weekday: d.toLocaleDateString('de-DE', { weekday: 'short' }),
-    date: d.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit' })
-  }
+  return { weekday: weekdayFmt.format(d), date: shortDateFmt.format(d) }
 }
 
 function todayLocal(): string {
-  return new Date().toLocaleDateString('en-CA', { timeZone: TZ })
+  return dayKeyFmt.format(new Date())
 }
 
 function getHour(iso: string): number {
-  return toLocalDate(iso).getHours()
+  const h = parseInt(hourFmt.format(new Date(iso)), 10)
+  return h === 24 ? 0 : h
 }
 
 function getDayKey(iso: string): string {
-  return toLocalDate(iso).toLocaleDateString('en-CA')
+  return dayKeyFmt.format(new Date(iso))
+}
+
+function getLocalTime(iso: string): { h: number; m: number } {
+  const parts = schedTimeFmt.formatToParts(new Date(iso))
+  const h = parseInt(parts.find(p => p.type === 'hour')!.value, 10)
+  return { h: h === 24 ? 0 : h, m: parseInt(parts.find(p => p.type === 'minute')!.value, 10) }
 }
 
 export function groupByDate(showtimes: Showtime[]): [string, Showtime[]][] {
@@ -459,8 +449,8 @@ const ScheduleView: FC<{ movies: Movie[]; rooms: Room[] }> = ({ movies, rooms })
   const startHour = Math.min(...allShowings.map(s => getHour(s.startDatetime)))
   const endHour = Math.max(
     ...allShowings.map(s => {
-      const d = toLocalDate(s.endDatetime!)
-      return d.getHours() + (d.getMinutes() > 0 ? 1 : 0)
+      const { h, m } = getLocalTime(s.endDatetime!)
+      return h + (m > 0 ? 1 : 0)
     })
   )
 
@@ -501,14 +491,11 @@ const ScheduleView: FC<{ movies: Movie[]; rooms: Room[] }> = ({ movies, rooms })
                 {(byRoom.get(room.id) ?? [])
                   .filter(({ s }) => s.endDatetime != null)
                   .map(({ movie: m, s }) => {
-                    const startMin =
-                      getHour(s.startDatetime) * 60 +
-                      toLocalDate(s.startDatetime).getMinutes() -
-                      startHour * 60
+                    const { h: startH, m: startM } = getLocalTime(s.startDatetime)
+                    const startMin = startH * 60 + startM - startHour * 60
 
-                    const endD = toLocalDate(s.endDatetime!)
-                    const endMin =
-                      endD.getHours() * 60 + endD.getMinutes() - startHour * 60
+                    const { h: endH, m: endM } = getLocalTime(s.endDatetime!)
+                    const endMin = endH * 60 + endM - startHour * 60
 
                     const height = Math.max((endMin - startMin) * pxPerMin, 24)
 
