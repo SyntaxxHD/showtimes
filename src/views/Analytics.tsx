@@ -1,5 +1,5 @@
 import type { FC } from 'hono/jsx'
-import { count, max, min, sql, sum } from 'drizzle-orm'
+import { count, desc, eq, max, min, sql, sum } from 'drizzle-orm'
 import { db } from '../db.ts'
 import { contents, rooms, showings } from '../schema.ts'
 import { EmptyState, PageSection, StatTile } from './components.tsx'
@@ -58,7 +58,7 @@ export const AnalyticsPage: FC = () => {
     })
     .from(showings)
     .groupBy(showings.contentId)
-    .orderBy(sql`count(*) desc`)
+    .orderBy(desc(count()))
     .limit(15)
     .all()
 
@@ -71,9 +71,9 @@ export const AnalyticsPage: FC = () => {
       count: count()
     })
     .from(showings)
-    .leftJoin(rooms, sql`${rooms.id} = ${showings.cinemaRoomId}`)
+    .leftJoin(rooms, eq(rooms.id, showings.cinemaRoomId))
     .groupBy(showings.cinemaRoomId)
-    .orderBy(sql`count(*) desc`)
+    .orderBy(desc(count()))
     .all()
 
   const maxRoomCount = roomStats[0]?.count ?? 1

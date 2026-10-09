@@ -3,7 +3,7 @@ import { drizzle } from 'drizzle-orm/bun-sqlite'
 import { migrate } from 'drizzle-orm/bun-sqlite/migrator'
 import * as schema from './schema.ts'
 import { config, contents, rooms, showings } from './schema.ts'
-import { eq, sql } from 'drizzle-orm'
+import { and, asc, eq, gte, lt, min, sql } from 'drizzle-orm'
 import type { Movie, Program, Room, Showtime } from './types.ts'
 
 declare global {
@@ -125,93 +125,72 @@ export function setConfig(key: string, value: string): void {
 }
 
 export function getEarliestDay(cinemaId: number): string | null {
-  const row = db.get(
-    sql`SELECT MIN(substr(start_datetime, 1, 10)) AS day FROM showings WHERE cinema_id = ${cinemaId}`
-  ) as { day: string | null } | undefined
+  const row = db
+    .select({ day: min(sql<string>`substr(${showings.startDatetime}, 1, 10)`) })
+    .from(showings)
+    .where(eq(showings.cinemaId, cinemaId))
+    .get()
   return row?.day ?? null
 }
 
 export function getHistoricDays(cinemaId: number): string[] {
-  const rows = db.all(
-    sql`SELECT DISTINCT substr(start_datetime, 1, 10) AS day FROM showings WHERE start_datetime < date('now') AND cinema_id = ${cinemaId} ORDER BY day ASC`
-  ) as Array<{ day: string }>
+  const dayExpr = sql<string>`substr(${showings.startDatetime}, 1, 10)`
+  const rows = db
+    .select({ day: dayExpr })
+    .from(showings)
+    .where(and(lt(showings.startDatetime, sql`date('now')`), eq(showings.cinemaId, cinemaId)))
+    .groupBy(dayExpr)
+    .orderBy(asc(dayExpr))
+    .all()
   return rows.map(r => r.day)
 }
 
-type ProgramRow = {
-  showingId: number
-  startDatetime: string
-  endDatetime: string | null
-  roomId: number
-  roomName: string
-  language: string | null
-  originalLanguage: string | null
-  isOriginalVersion: number | null
-  isSubtitled: number | null
-  subtitledLanguage: string | null
-  is3D: number | null
-  isDolbyAtmos: number | null
-  isImax: number | null
-  is4DX: number | null
-  isPremiere: number | null
-  isPreview: number | null
-  ticketUrl: string | null
-  state: string
-  fetchedAt: string
-  contentId: number
-  contentName: string
-  slug: string
-  description: string | null
-  duration: number | null
-  ageRating: string | null
-  posterImageUrl: string | null
-  backdropImageUrl: string | null
-  trailerUrl: string | null
-  premiereDate: string | null
-  roomTableId: number
-  seatCount: number | null
+function baseProgramQuery() {
+  return db
+    .select({
+      showingId:         showings.id,
+      startDatetime:     showings.startDatetime,
+      endDatetime:       showings.endDatetime,
+      roomId:            showings.cinemaRoomId,
+      roomName:          rooms.name,
+      language:          showings.language,
+      originalLanguage:  showings.originalLanguage,
+      isOriginalVersion: showings.isOriginalVersion,
+      isSubtitled:       showings.isSubtitled,
+      subtitledLanguage: showings.subtitledLanguage,
+      is3D:              showings.is3D,
+      isDolbyAtmos:      showings.isDolbyAtmos,
+      isImax:            showings.isImax,
+      is4DX:             showings.is4DX,
+      isPremiere:        showings.isPremiere,
+      isPreview:         showings.isPreview,
+      ticketUrl:         showings.ticketUrl,
+      state:             showings.state,
+      fetchedAt:         showings.fetchedAt,
+      contentId:         contents.id,
+      contentName:       contents.name,
+      slug:              contents.slug,
+      description:       contents.description,
+      duration:          contents.duration,
+      ageRating:         contents.ageRating,
+      posterImageUrl:    contents.posterImageUrl,
+      backdropImageUrl:  contents.backdropImageUrl,
+      trailerUrl:        contents.trailerUrl,
+      premiereDate:      contents.premiereDate,
+      roomTableId:       rooms.id,
+      seatCount:         rooms.seatCount
+    })
+    .from(showings)
+    .innerJoin(contents, eq(showings.contentId, contents.id))
+    .innerJoin(rooms, eq(showings.cinemaRoomId, rooms.id))
 }
 
-const PROGRAM_SELECT = sql`
-  SELECT
-    s.id AS showingId,
-    s.start_datetime AS startDatetime,
-    s.end_datetime AS endDatetime,
-    s.cinema_room_id AS roomId,
-    r.name AS roomName,
-    s.language AS language,
-    s.original_language AS originalLanguage,
-    s.is_original_version AS isOriginalVersion,
-    s.is_subtitled AS isSubtitled,
-    s.subtitled_language AS subtitledLanguage,
-    s.is_3d AS is3D,
-    s.is_dolby_atmos AS isDolbyAtmos,
-    s.is_imax AS isImax,
-    s.is_4dx AS is4DX,
-    s.is_premiere AS isPremiere,
-    s.is_preview AS isPreview,
-    s.ticket_url AS ticketUrl,
-    s.state AS state,
-    s.fetched_at AS fetchedAt,
-    c.id AS contentId,
-    c.name AS contentName,
-    c.slug AS slug,
-    c.description AS description,
-    c.duration AS duration,
-    c.age_rating AS ageRating,
-    c.poster_image_url AS posterImageUrl,
-    c.backdrop_image_url AS backdropImageUrl,
-    c.trailer_url AS trailerUrl,
-    c.premiere_date AS premiereDate,
-    r.id AS roomTableId,
-    r.seat_count AS seatCount
-  FROM showings s
-  JOIN contents c ON s.content_id = c.id
-  JOIN rooms r ON s.cinema_room_id = r.id
-`
+type ProgramRow = ReturnType<ReturnType<typeof baseProgramQuery>['all']>[number]
 
 function buildProgram(rows: ProgramRow[]): Program | null {
-  if (rows.length === 0) {return null}
+  if (rows.length === 0) {
+    return null
+  }
 
   const movieMap = new Map<number, Movie>()
   const roomMap = new Map<number, Room>()
@@ -254,15 +233,15 @@ function buildProgram(rows: ProgramRow[]): Program | null {
       roomName: row.roomName,
       language: row.language,
       originalLanguage: row.originalLanguage,
-      isOriginalVersion: row.isOriginalVersion === 1,
-      isSubtitled: row.isSubtitled === 1,
+      isOriginalVersion: row.isOriginalVersion ?? false,
+      isSubtitled: row.isSubtitled ?? false,
       subtitledLanguage: row.subtitledLanguage,
-      is3D: row.is3D === 1,
-      isDolbyAtmos: row.isDolbyAtmos == null ? null : row.isDolbyAtmos === 1,
-      isImax: row.isImax == null ? null : row.isImax === 1,
-      is4DX: row.is4DX == null ? null : row.is4DX === 1,
-      isPremiere: row.isPremiere === 1,
-      isPreview: row.isPreview === 1,
+      is3D: row.is3D ?? false,
+      isDolbyAtmos: row.isDolbyAtmos,
+      isImax: row.isImax,
+      is4DX: row.is4DX,
+      isPremiere: row.isPremiere ?? false,
+      isPreview: row.isPreview ?? false,
       ticketUrl: row.ticketUrl,
       state: row.state
     }
@@ -278,17 +257,23 @@ function buildProgram(rows: ProgramRow[]): Program | null {
 }
 
 export function getProgramFromDb(cinemaId: number, date: string): Program {
-  const rows = db.all(
-    sql`${PROGRAM_SELECT} WHERE substr(s.start_datetime, 1, 10) = ${date} AND s.cinema_id = ${cinemaId} ORDER BY s.start_datetime ASC`
-  ) as ProgramRow[]
-
+  const rows = baseProgramQuery()
+    .where(and(
+      eq(sql<string>`substr(${showings.startDatetime}, 1, 10)`, date),
+      eq(showings.cinemaId, cinemaId)
+    ))
+    .orderBy(asc(showings.startDatetime))
+    .all()
   return buildProgram(rows) ?? { fetchedAt: new Date().toISOString(), rooms: [], movies: [] }
 }
 
 export function getLatestProgramFromDb(cinemaId: number): Program | null {
-  const rows = db.all(
-    sql`${PROGRAM_SELECT} WHERE s.cinema_id = ${cinemaId} AND s.start_datetime >= date('now', '-1 day') ORDER BY s.start_datetime ASC`
-  ) as ProgramRow[]
-
+  const rows = baseProgramQuery()
+    .where(and(
+      eq(showings.cinemaId, cinemaId),
+      gte(showings.startDatetime, sql`date('now', '-1 day')`)
+    ))
+    .orderBy(asc(showings.startDatetime))
+    .all()
   return buildProgram(rows)
 }

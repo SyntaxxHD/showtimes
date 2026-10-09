@@ -44,10 +44,13 @@ function applySchedule(schedule: FetchSchedule): void {
     globalThis._scheduleTimer = undefined
   }
 
+  console.log(`[schedule] fetch schedule: ${schedule}`)
+
   if (schedule !== 'on_demand') {
     getProgram(cinemaId).catch(console.error)
 
     globalThis._scheduleTimer = setInterval(() => {
+      console.log('[schedule] scheduled refresh triggered')
       clearProgramCache(cinemaId)
       getProgram(cinemaId).catch(console.error)
     }, SCHEDULE_MS[schedule])
