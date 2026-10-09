@@ -2,9 +2,16 @@ import { Database } from 'bun:sqlite'
 import { drizzle } from 'drizzle-orm/bun-sqlite'
 import { migrate } from 'drizzle-orm/bun-sqlite/migrator'
 import * as schema from './schema.ts'
-import { config, contents, rooms, showings } from './schema.ts'
-import { and, asc, eq, gte, lt, min, sql } from 'drizzle-orm'
-import type { Movie, Program, Room, Showtime } from './types.ts'
+import {
+  config,
+  contents,
+  pushSubscriptions,
+  rooms,
+  showings,
+  watches
+} from './schema.ts'
+import { and, asc, desc, eq, gte, isNull, lt, min, sql } from 'drizzle-orm'
+import type { Movie, Program, PushSubscription, Room, Showtime, Watch } from './types.ts'
 
 declare global {
   var _db: Database | undefined
@@ -55,7 +62,8 @@ export function persistProgram(
           posterImageUrl: m.posterImageUrl,
           backdropImageUrl: m.backdropImageUrl,
           trailerUrl: m.trailerUrl,
-          premiereDate: m.premiereDate
+          premiereDate: m.premiereDate,
+          movieId: m.movieId
         })
         .onConflictDoUpdate({
           target: contents.id,
@@ -68,7 +76,8 @@ export function persistProgram(
             posterImageUrl: m.posterImageUrl,
             backdropImageUrl: m.backdropImageUrl,
             trailerUrl: m.trailerUrl,
-            premiereDate: m.premiereDate
+            premiereDate: m.premiereDate,
+            movieId: m.movieId
           }
         })
         .run()
@@ -138,7 +147,9 @@ export function getHistoricDays(cinemaId: number): string[] {
   const rows = db
     .select({ day: dayExpr })
     .from(showings)
-    .where(and(lt(showings.startDatetime, sql`date('now')`), eq(showings.cinemaId, cinemaId)))
+    .where(
+      and(lt(showings.startDatetime, sql`date('now')`), eq(showings.cinemaId, cinemaId))
+    )
     .groupBy(dayExpr)
     .orderBy(asc(dayExpr))
     .all()
@@ -148,37 +159,38 @@ export function getHistoricDays(cinemaId: number): string[] {
 function baseProgramQuery() {
   return db
     .select({
-      showingId:         showings.id,
-      startDatetime:     showings.startDatetime,
-      endDatetime:       showings.endDatetime,
-      roomId:            showings.cinemaRoomId,
-      roomName:          rooms.name,
-      language:          showings.language,
-      originalLanguage:  showings.originalLanguage,
+      showingId: showings.id,
+      startDatetime: showings.startDatetime,
+      endDatetime: showings.endDatetime,
+      roomId: showings.cinemaRoomId,
+      roomName: rooms.name,
+      language: showings.language,
+      originalLanguage: showings.originalLanguage,
       isOriginalVersion: showings.isOriginalVersion,
-      isSubtitled:       showings.isSubtitled,
+      isSubtitled: showings.isSubtitled,
       subtitledLanguage: showings.subtitledLanguage,
-      is3D:              showings.is3D,
-      isDolbyAtmos:      showings.isDolbyAtmos,
-      isImax:            showings.isImax,
-      is4DX:             showings.is4DX,
-      isPremiere:        showings.isPremiere,
-      isPreview:         showings.isPreview,
-      ticketUrl:         showings.ticketUrl,
-      state:             showings.state,
-      fetchedAt:         showings.fetchedAt,
-      contentId:         contents.id,
-      contentName:       contents.name,
-      slug:              contents.slug,
-      description:       contents.description,
-      duration:          contents.duration,
-      ageRating:         contents.ageRating,
-      posterImageUrl:    contents.posterImageUrl,
-      backdropImageUrl:  contents.backdropImageUrl,
-      trailerUrl:        contents.trailerUrl,
-      premiereDate:      contents.premiereDate,
-      roomTableId:       rooms.id,
-      seatCount:         rooms.seatCount
+      is3D: showings.is3D,
+      isDolbyAtmos: showings.isDolbyAtmos,
+      isImax: showings.isImax,
+      is4DX: showings.is4DX,
+      isPremiere: showings.isPremiere,
+      isPreview: showings.isPreview,
+      ticketUrl: showings.ticketUrl,
+      state: showings.state,
+      fetchedAt: showings.fetchedAt,
+      contentId: contents.id,
+      contentName: contents.name,
+      slug: contents.slug,
+      description: contents.description,
+      duration: contents.duration,
+      ageRating: contents.ageRating,
+      posterImageUrl: contents.posterImageUrl,
+      backdropImageUrl: contents.backdropImageUrl,
+      trailerUrl: contents.trailerUrl,
+      premiereDate: contents.premiereDate,
+      movieId: contents.movieId,
+      roomTableId: rooms.id,
+      seatCount: rooms.seatCount
     })
     .from(showings)
     .innerJoin(contents, eq(showings.contentId, contents.id))
@@ -212,6 +224,7 @@ function buildProgram(rows: ProgramRow[]): Program | null {
     if (!movieMap.has(row.contentId)) {
       movieMap.set(row.contentId, {
         contentId: row.contentId,
+        movieId: row.movieId,
         name: row.contentName,
         slug: row.slug,
         description: row.description,
@@ -258,22 +271,111 @@ function buildProgram(rows: ProgramRow[]): Program | null {
 
 export function getProgramFromDb(cinemaId: number, date: string): Program {
   const rows = baseProgramQuery()
-    .where(and(
-      eq(sql<string>`substr(${showings.startDatetime}, 1, 10)`, date),
-      eq(showings.cinemaId, cinemaId)
-    ))
+    .where(
+      and(
+        eq(sql<string>`substr(${showings.startDatetime}, 1, 10)`, date),
+        eq(showings.cinemaId, cinemaId)
+      )
+    )
     .orderBy(asc(showings.startDatetime))
     .all()
-  return buildProgram(rows) ?? { fetchedAt: new Date().toISOString(), rooms: [], movies: [] }
+  return (
+    buildProgram(rows) ?? { fetchedAt: new Date().toISOString(), rooms: [], movies: [] }
+  )
 }
 
 export function getLatestProgramFromDb(cinemaId: number): Program | null {
   const rows = baseProgramQuery()
-    .where(and(
-      eq(showings.cinemaId, cinemaId),
-      gte(showings.startDatetime, sql`date('now', '-1 day')`)
-    ))
+    .where(
+      and(
+        eq(showings.cinemaId, cinemaId),
+        gte(showings.startDatetime, sql`date('now', '-1 day')`)
+      )
+    )
     .orderBy(asc(showings.startDatetime))
     .all()
   return buildProgram(rows)
+}
+
+export function addWatch(tmdbId: number, title: string, posterPath: string | null): void {
+  db.insert(watches)
+    .values({ tmdbId, title, posterPath, createdAt: new Date().toISOString() })
+    .run()
+}
+
+export function getWatches(): Watch[] {
+  return db
+    .select()
+    .from(watches)
+    .orderBy(desc(watches.createdAt))
+    .all()
+    .map(r => ({
+      id: r.id,
+      tmdbId: r.tmdbId,
+      title: r.title,
+      posterPath: r.posterPath,
+      createdAt: r.createdAt,
+      notifiedAt: r.notifiedAt,
+      matchedMovie: r.matchedMovie
+    }))
+}
+
+export function getUnnotifiedWatches(): Watch[] {
+  return db
+    .select()
+    .from(watches)
+    .where(isNull(watches.notifiedAt))
+    .all()
+    .map(r => ({
+      id: r.id,
+      tmdbId: r.tmdbId,
+      title: r.title,
+      posterPath: r.posterPath,
+      createdAt: r.createdAt,
+      notifiedAt: r.notifiedAt,
+      matchedMovie: r.matchedMovie
+    }))
+}
+
+export function deleteWatch(id: number): void {
+  db.delete(watches).where(eq(watches.id, id)).run()
+}
+
+export function markWatchNotified(id: number, matchedMovie: string): void {
+  db.update(watches)
+    .set({ notifiedAt: new Date().toISOString(), matchedMovie })
+    .where(eq(watches.id, id))
+    .run()
+}
+
+export function addPushSubscription(
+  endpoint: string,
+  p256dh: string,
+  auth: string
+): void {
+  db.insert(pushSubscriptions)
+    .values({ endpoint, p256dh, auth, createdAt: new Date().toISOString() })
+    .onConflictDoUpdate({
+      target: pushSubscriptions.endpoint,
+      set: { p256dh, auth, createdAt: new Date().toISOString() }
+    })
+    .run()
+}
+
+export function getPushSubscriptions(): PushSubscription[] {
+  return db
+    .select()
+    .from(pushSubscriptions)
+    .all()
+    .map(r => ({
+      id: r.id,
+      endpoint: r.endpoint,
+      p256dh: r.p256dh,
+      auth: r.auth,
+      createdAt: r.createdAt
+    }))
+}
+
+export function deletePushSubscription(endpoint: string): void {
+  db.delete(pushSubscriptions).where(eq(pushSubscriptions.endpoint, endpoint)).run()
 }

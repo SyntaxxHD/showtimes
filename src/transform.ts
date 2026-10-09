@@ -41,6 +41,7 @@ export function transform(
       const imgs = imageMap.get(content.id)
       movieMap.set(content.id, {
         contentId: content.id,
+        movieId: content.movieId,
         name: content.name,
         slug: content.slug,
         description: content.description,

@@ -4,12 +4,17 @@ A self-hosted program viewer for cinemas running on the [Cineamo](https://cineam
 
 Works for any Cineamo cinema, just set your `CINEMA_ID`.
 
+| Program | Saal | Zeitplan |
+|---|---|---|
+| ![Program](docs/screenshots/program.png) | ![Saal](docs/screenshots/saal.png) | ![Zeitplan](docs/screenshots/zeitplan.png) |
+
 ## Features
 
 - Movie grid, by-room, and schedule (timeline) views
 - Filters by day, room, language, format, and time of day
 - Showtime statistics page
 - Caches API responses for one hour, persists data to SQLite
+- Movie watch notifications via webhook and browser push
 
 ## Stack
 
@@ -73,3 +78,15 @@ Open the settings page at `/settings` once the app is running. It lets you searc
 ## Room colors
 
 The schedule and room views have color coding for rooms named Black, Blue, Red, Green, Purple, and Brown, which happen to be the room names at my cinema. Other cinemas will get rooms without color tinting, which still works fine.
+
+## Notifications
+
+Open **Einstellungen > Film-Benachrichtigungen** to set up watches.
+
+1. **TMDB token**: get a free read-access token at [themoviedb.org/settings/api](https://www.themoviedb.org/settings/api) and paste it in. Required for movie search.
+
+2. **Search & watch**: search for a film and click "Beobachten". The app checks on each program fetch; once found, the watch fires once and is marked as done.
+
+3. **Delivery**: webhook URL (any URL, ntfy.sh/Gotify/Slack/etc.) or browser push via "Aktivieren". iOS requires the page to be installed as a PWA first (Add to Home Screen in Safari).
+
+4. **Schedule**: set a daily or weekly schedule in Abruf-Zeitplan so checks happen automatically in the background.

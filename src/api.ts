@@ -156,7 +156,9 @@ async function fetchAndCache(cinemaId: number): Promise<Program> {
     expiresAt: Date.now() + CACHE_TTL_MS
   })
 
-  console.log(`[program] fetch complete: ${program.movies.length} movies in ${Date.now() - start}ms`)
+  console.log(
+    `[program] fetch complete: ${program.movies.length} movies in ${Date.now() - start}ms`
+  )
   return program
 }
 
@@ -170,7 +172,9 @@ export async function getProgram(cinemaId: number): Promise<Program> {
 
   const dbProgram = getLatestProgramFromDb(cinemaId)
   if (dbProgram) {
-    console.log(`[program] cache miss, serving db snapshot (fetched ${dbProgram.fetchedAt}), refreshing in background`)
+    console.log(
+      `[program] cache miss, serving db snapshot (fetched ${dbProgram.fetchedAt}), refreshing in background`
+    )
     globalThis._programCache.set(cinemaId, {
       data: dbProgram,
       expiresAt: Date.now() + CACHE_TTL_MS

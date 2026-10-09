@@ -114,6 +114,7 @@ export interface Showtime {
 
 export interface Movie {
   contentId: number
+  movieId: number | null
   name: string
   slug: string
   description: string | null
@@ -155,4 +156,29 @@ export interface CinemaInfo {
   shortName: string
   logoWideImageUrl: string | null
   websiteUrl: string | null
+}
+
+export interface Watch {
+  id: number
+  tmdbId: number
+  title: string
+  posterPath: string | null
+  createdAt: string
+  notifiedAt: string | null
+  matchedMovie: string | null
+}
+
+export interface PushSubscription {
+  id: number
+  endpoint: string
+  p256dh: string
+  auth: string
+  createdAt: string
+}
+
+export interface TmdbMovieResult {
+  id: number
+  title: string
+  releaseDate: string | null
+  posterPath: string | null
 }

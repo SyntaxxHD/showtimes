@@ -17,7 +17,8 @@ export const contents = sqliteTable('contents', {
   posterImageUrl: text('poster_image_url'),
   backdropImageUrl: text('backdrop_image_url'),
   trailerUrl: text('trailer_url'),
-  premiereDate: text('premiere_date')
+  premiereDate: text('premiere_date'),
+  movieId: integer('movie_id')
 })
 
 export const showings = sqliteTable('showings', {
@@ -47,4 +48,22 @@ export const showings = sqliteTable('showings', {
 export const config = sqliteTable('config', {
   key: text('key').primaryKey(),
   value: text('value').notNull()
+})
+
+export const watches = sqliteTable('watches', {
+  id: integer('id').primaryKey(),
+  tmdbId: integer('tmdb_id').notNull(),
+  title: text('title').notNull(),
+  posterPath: text('poster_path'),
+  createdAt: text('created_at').notNull(),
+  notifiedAt: text('notified_at'),
+  matchedMovie: text('matched_movie')
+})
+
+export const pushSubscriptions = sqliteTable('push_subscriptions', {
+  id: integer('id').primaryKey(),
+  endpoint: text('endpoint').notNull().unique(),
+  p256dh: text('p256dh').notNull(),
+  auth: text('auth').notNull(),
+  createdAt: text('created_at').notNull()
 })

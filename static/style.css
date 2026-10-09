@@ -280,8 +280,20 @@ p {
   flex: 1;
   min-width: 0;
   scrollbar-width: none;
-  mask-image: linear-gradient(to right, transparent, black 1.5rem, black calc(100% - 1.5rem), transparent);
-  -webkit-mask-image: linear-gradient(to right, transparent, black 1.5rem, black calc(100% - 1.5rem), transparent);
+  mask-image: linear-gradient(
+    to right,
+    transparent,
+    black 1.5rem,
+    black calc(100% - 1.5rem),
+    transparent
+  );
+  -webkit-mask-image: linear-gradient(
+    to right,
+    transparent,
+    black 1.5rem,
+    black calc(100% - 1.5rem),
+    transparent
+  );
 }
 
 .day-strip::-webkit-scrollbar {
@@ -1051,6 +1063,11 @@ p {
   overflow-y: auto;
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
+  margin-top: 0.75rem;
+}
+
+.settings-results .empty {
+  padding: 1rem 0.75rem;
 }
 
 .settings-result-row {
@@ -1066,6 +1083,25 @@ p {
 }
 .settings-result-row:hover {
   background: var(--surface-2);
+}
+
+.settings-media-row {
+  grid-template-columns: auto 1fr auto;
+  padding: 0.5rem 0.75rem;
+  gap: 0.875rem;
+}
+
+.settings-media-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  min-width: 0;
+  color: inherit;
+  text-decoration: none;
+}
+
+.settings-media-info:hover .settings-result-name {
+  color: var(--accent-light);
 }
 
 .settings-result-name {
@@ -1134,4 +1170,99 @@ p {
 .settings-radio.active {
   border-color: var(--accent);
   color: var(--accent-light);
+}
+
+.settings-notif-section {
+  margin-top: 1.25rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--border);
+}
+
+.settings-notif-heading {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin: 0 0 0.4rem;
+}
+
+.settings-notif-desc {
+  font-size: 0.85rem;
+  color: var(--text-dim);
+  margin: 0 0 0.75rem;
+}
+
+.settings-notif-desc a {
+  color: var(--accent-light);
+}
+
+.settings-push-gate {
+  position: relative;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.settings-push-gate.locked {
+  min-height: 90px;
+}
+
+.settings-push-gate.locked .settings-push-content {
+  filter: blur(4px);
+  pointer-events: none;
+  user-select: none;
+}
+
+.settings-push-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  text-align: center;
+  padding: 1rem;
+  background: rgba(28, 28, 28, 0.75);
+  backdrop-filter: blur(2px);
+  color: var(--text-dim);
+}
+
+.settings-push-overlay--hidden {
+  display: none;
+}
+
+.settings-push-gate-heading {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.settings-push-gate-desc {
+  font-size: 0.8rem;
+  color: var(--text-dim);
+  max-width: 280px;
+  line-height: 1.4;
+}
+
+.settings-push-row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.settings-poster-thumb {
+  width: 48px;
+  height: 72px;
+  object-fit: cover;
+  border-radius: 3px;
+  flex-shrink: 0;
+}
+
+.settings-poster-placeholder {
+  width: 48px;
+  height: 72px;
+  background: var(--surface-2);
+  border-radius: 3px;
+  flex-shrink: 0;
 }

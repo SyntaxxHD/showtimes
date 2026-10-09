@@ -7,5 +7,7 @@ if (el) {
   const saved = sessionStorage.getItem(storageKey)
   if (saved) el.scrollLeft = +saved
 
-  el.addEventListener('scroll', () => sessionStorage.setItem(storageKey, el.scrollLeft), { passive: true })
+  el.addEventListener('scroll', () => sessionStorage.setItem(storageKey, el.scrollLeft), {
+    passive: true
+  })
 }
