@@ -45,6 +45,8 @@ function applySchedule(schedule: FetchSchedule): void {
   }
 
   if (schedule !== 'on_demand') {
+    getProgram(cinemaId).catch(console.error)
+
     globalThis._scheduleTimer = setInterval(() => {
       clearProgramCache(cinemaId)
       getProgram(cinemaId).catch(console.error)

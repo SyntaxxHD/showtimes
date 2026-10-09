@@ -138,80 +138,80 @@ export function getHistoricDays(cinemaId: number): string[] {
   return rows.map(r => r.day)
 }
 
-export function getProgramFromDb(cinemaId: number, date: string): Program {
-  const rows = db.all(
-    sql`
-      SELECT
-        s.id AS showingId,
-        s.start_datetime AS startDatetime,
-        s.end_datetime AS endDatetime,
-        s.cinema_room_id AS roomId,
-        r.name AS roomName,
-        s.language AS language,
-        s.original_language AS originalLanguage,
-        s.is_original_version AS isOriginalVersion,
-        s.is_subtitled AS isSubtitled,
-        s.subtitled_language AS subtitledLanguage,
-        s.is_3d AS is3D,
-        s.is_dolby_atmos AS isDolbyAtmos,
-        s.is_imax AS isImax,
-        s.is_4dx AS is4DX,
-        s.is_premiere AS isPremiere,
-        s.is_preview AS isPreview,
-        s.ticket_url AS ticketUrl,
-        s.state AS state,
-        s.fetched_at AS fetchedAt,
-        c.id AS contentId,
-        c.name AS contentName,
-        c.slug AS slug,
-        c.description AS description,
-        c.duration AS duration,
-        c.age_rating AS ageRating,
-        c.poster_image_url AS posterImageUrl,
-        c.backdrop_image_url AS backdropImageUrl,
-        c.trailer_url AS trailerUrl,
-        c.premiere_date AS premiereDate,
-        r.id AS roomTableId,
-        r.seat_count AS seatCount
-      FROM showings s
-      JOIN contents c ON s.content_id = c.id
-      JOIN rooms r ON s.cinema_room_id = r.id
-      WHERE substr(s.start_datetime, 1, 10) = ${date} AND s.cinema_id = ${cinemaId}
-      ORDER BY s.start_datetime ASC
-    `
-  ) as Array<{
-    showingId: number
-    startDatetime: string
-    endDatetime: string | null
-    roomId: number
-    roomName: string
-    language: string | null
-    originalLanguage: string | null
-    isOriginalVersion: number | null
-    isSubtitled: number | null
-    subtitledLanguage: string | null
-    is3D: number | null
-    isDolbyAtmos: number | null
-    isImax: number | null
-    is4DX: number | null
-    isPremiere: number | null
-    isPreview: number | null
-    ticketUrl: string | null
-    state: string
-    fetchedAt: string
-    contentId: number
-    contentName: string
-    slug: string
-    description: string | null
-    duration: number | null
-    ageRating: string | null
-    posterImageUrl: string | null
-    backdropImageUrl: string | null
-    trailerUrl: string | null
-    premiereDate: string | null
-    roomTableId: number
-    seatCount: number | null
-  }>
+type ProgramRow = {
+  showingId: number
+  startDatetime: string
+  endDatetime: string | null
+  roomId: number
+  roomName: string
+  language: string | null
+  originalLanguage: string | null
+  isOriginalVersion: number | null
+  isSubtitled: number | null
+  subtitledLanguage: string | null
+  is3D: number | null
+  isDolbyAtmos: number | null
+  isImax: number | null
+  is4DX: number | null
+  isPremiere: number | null
+  isPreview: number | null
+  ticketUrl: string | null
+  state: string
+  fetchedAt: string
+  contentId: number
+  contentName: string
+  slug: string
+  description: string | null
+  duration: number | null
+  ageRating: string | null
+  posterImageUrl: string | null
+  backdropImageUrl: string | null
+  trailerUrl: string | null
+  premiereDate: string | null
+  roomTableId: number
+  seatCount: number | null
+}
+
+const PROGRAM_SELECT = sql`
+  SELECT
+    s.id AS showingId,
+    s.start_datetime AS startDatetime,
+    s.end_datetime AS endDatetime,
+    s.cinema_room_id AS roomId,
+    r.name AS roomName,
+    s.language AS language,
+    s.original_language AS originalLanguage,
+    s.is_original_version AS isOriginalVersion,
+    s.is_subtitled AS isSubtitled,
+    s.subtitled_language AS subtitledLanguage,
+    s.is_3d AS is3D,
+    s.is_dolby_atmos AS isDolbyAtmos,
+    s.is_imax AS isImax,
+    s.is_4dx AS is4DX,
+    s.is_premiere AS isPremiere,
+    s.is_preview AS isPreview,
+    s.ticket_url AS ticketUrl,
+    s.state AS state,
+    s.fetched_at AS fetchedAt,
+    c.id AS contentId,
+    c.name AS contentName,
+    c.slug AS slug,
+    c.description AS description,
+    c.duration AS duration,
+    c.age_rating AS ageRating,
+    c.poster_image_url AS posterImageUrl,
+    c.backdrop_image_url AS backdropImageUrl,
+    c.trailer_url AS trailerUrl,
+    c.premiere_date AS premiereDate,
+    r.id AS roomTableId,
+    r.seat_count AS seatCount
+  FROM showings s
+  JOIN contents c ON s.content_id = c.id
+  JOIN rooms r ON s.cinema_room_id = r.id
+`
+
+function buildProgram(rows: ProgramRow[]): Program | null {
+  if (rows.length === 0) {return null}
 
   const movieMap = new Map<number, Movie>()
   const roomMap = new Map<number, Room>()
@@ -271,8 +271,24 @@ export function getProgramFromDb(cinemaId: number, date: string): Program {
   }
 
   return {
-    fetchedAt: latestFetchedAt || new Date().toISOString(),
+    fetchedAt: latestFetchedAt,
     rooms: Array.from(roomMap.values()),
     movies: Array.from(movieMap.values())
   }
+}
+
+export function getProgramFromDb(cinemaId: number, date: string): Program {
+  const rows = db.all(
+    sql`${PROGRAM_SELECT} WHERE substr(s.start_datetime, 1, 10) = ${date} AND s.cinema_id = ${cinemaId} ORDER BY s.start_datetime ASC`
+  ) as ProgramRow[]
+
+  return buildProgram(rows) ?? { fetchedAt: new Date().toISOString(), rooms: [], movies: [] }
+}
+
+export function getLatestProgramFromDb(cinemaId: number): Program | null {
+  const rows = db.all(
+    sql`${PROGRAM_SELECT} WHERE s.cinema_id = ${cinemaId} AND s.start_datetime >= date('now', '-1 day') ORDER BY s.start_datetime ASC`
+  ) as ProgramRow[]
+
+  return buildProgram(rows)
 }

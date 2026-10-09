@@ -7,7 +7,7 @@ import type {
   Program
 } from './types.ts'
 import { transform } from './transform.ts'
-import { persistProgram } from './db.ts'
+import { getLatestProgramFromDb, persistProgram } from './db.ts'
 
 const BASE = 'https://api.cineamo.com'
 const CACHE_TTL_MS = 60 * 60 * 1000
@@ -136,14 +136,7 @@ export function clearProgramCache(cinemaId?: number): void {
   }
 }
 
-export async function getProgram(cinemaId: number): Promise<Program> {
-  globalThis._programCache ??= new Map()
-  const cached = globalThis._programCache.get(cinemaId)
-
-  if (cached && Date.now() < cached.expiresAt) {
-    return cached.data
-  }
-
+async function fetchAndCache(cinemaId: number): Promise<Program> {
   const [rooms, showings] = await Promise.all([
     fetchRooms(cinemaId),
     fetchShowings(cinemaId)
@@ -154,10 +147,32 @@ export async function getProgram(cinemaId: number): Promise<Program> {
 
   persistProgram(cinemaId, program.rooms, program.movies)
 
+  globalThis._programCache ??= new Map()
   globalThis._programCache.set(cinemaId, {
     data: program,
     expiresAt: Date.now() + CACHE_TTL_MS
   })
 
   return program
+}
+
+export async function getProgram(cinemaId: number): Promise<Program> {
+  globalThis._programCache ??= new Map()
+  const cached = globalThis._programCache.get(cinemaId)
+
+  if (cached && Date.now() < cached.expiresAt) {
+    return cached.data
+  }
+
+  const dbProgram = getLatestProgramFromDb(cinemaId)
+  if (dbProgram) {
+    globalThis._programCache.set(cinemaId, {
+      data: dbProgram,
+      expiresAt: Date.now() + CACHE_TTL_MS
+    })
+    fetchAndCache(cinemaId).catch(console.error)
+    return dbProgram
+  }
+
+  return fetchAndCache(cinemaId)
 }
