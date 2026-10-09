@@ -14,19 +14,25 @@ const Layout: FC<PropsWithChildren<LayoutProps>> = ({
   children
 }) => {
   const pageTitle = cinemaInfo.name
+
   return (
     <html lang='de'>
       <head>
         <meta charset='utf-8' />
         <meta name='viewport' content='width=device-width, initial-scale=1' />
         <title>{pageTitle}</title>
+
+        <script src='/static/filter-prefs.js'></script>
         <link rel='stylesheet' href='/static/style.css' />
         <script src='/static/scroll.js' defer></script>
+        <script src='/static/filters.js' defer></script>
+
         <link rel='manifest' href='/static/manifest.json' />
         <link rel='apple-touch-icon' href='/static/icon-180.png' />
         <meta name='apple-mobile-web-app-capable' content='yes' />
         <meta name='apple-mobile-web-app-status-bar-style' content='black-translucent' />
         <meta name='theme-color' content='#1c1c1c' />
+
         <link
           rel='icon'
           href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='6' fill='%231c1c1c'/><circle cx='16' cy='16' r='10' fill='none' stroke='%239a9a7c' stroke-width='2'/><polygon points='13,11 23,16 13,21' fill='%239a9a7c'/></svg>"

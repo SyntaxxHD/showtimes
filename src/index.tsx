@@ -19,6 +19,7 @@ import Layout from './views/Layout.tsx'
 import { ProgramPage } from './views/Program.tsx'
 import { AnalyticsPage } from './views/Analytics.tsx'
 import { SettingsPage } from './views/Settings.tsx'
+import { MovieDetailPage } from './views/MovieDetail.tsx'
 import webpush from 'web-push'
 
 declare global {
@@ -30,6 +31,7 @@ declare global {
 const envCinemaId = process.env.CINEMA_ID ? parseInt(process.env.CINEMA_ID, 10) : null
 const dbCinemaId = getConfig('cinema_id')
 let cinemaId = envCinemaId ?? (dbCinemaId ? parseInt(dbCinemaId, 10) : 1045)
+
 globalThis._cinemaIdEnvOverride = envCinemaId !== null
 
 globalThis._cinemaInfo ??= await fetchCinemaInfo(cinemaId)
@@ -40,6 +42,7 @@ if (!getConfig('vapid_public_key')) {
   setConfig('vapid_private_key', keys.privateKey)
   console.log('[push] generated VAPID keys')
 }
+
 webpush.setVapidDetails(
   'mailto:admin@example.com',
   getConfig('vapid_public_key')!,
@@ -139,6 +142,27 @@ app.get('/program', async c => {
   )
 })
 
+app.get('/movie/:contentId', async c => {
+  const contentId = parseInt(c.req.param('contentId'), 10)
+  if (isNaN(contentId)) {
+    return c.notFound()
+  }
+  const program = await getProgram(cinemaId)
+  const movie = program.movies.find(m => m.contentId === contentId)
+  if (!movie) {
+    return c.notFound()
+  }
+  const today = new Date().toLocaleDateString('en-CA', { timeZone: 'Europe/Berlin' })
+  const upcomingShowtimes = movie.showtimes.filter(
+    s => s.startDatetime.slice(0, 10) >= today
+  )
+  return c.html(
+    <Layout activePath='program' cinemaInfo={getCinemaInfo()}>
+      <MovieDetailPage movie={movie} upcomingShowtimes={upcomingShowtimes} />
+    </Layout>
+  )
+})
+
 app.get('/analytics', c => {
   return c.html(
     <Layout activePath='analytics' cinemaInfo={getCinemaInfo()}>
@@ -183,6 +207,7 @@ app.post('/settings/cinema-search', async c => {
   const query = String(body['query'] ?? '')
     .trim()
     .toLowerCase()
+
   const allCinemas = await fetchAllCinemas()
   const results = query
     ? allCinemas.filter(
@@ -244,9 +269,11 @@ app.get('/settings/watches/search', async c => {
     const token = getConfig('tmdb_token')
     if (token) {
       const url = `https://api.themoviedb.org/3/search/movie?query=${encodeURIComponent(query)}&language=de-DE&page=1`
+
       const res = await fetch(url, {
         headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' }
       })
+
       if (res.ok) {
         const data = (await res.json()) as {
           results: Array<{

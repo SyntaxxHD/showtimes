@@ -92,6 +92,7 @@ export const AnalyticsPage: FC = () => {
   const ovCount = Number(langStats.ov ?? 0)
   const omuCount = Number(langStats.omu ?? 0)
   const deCount = Number(langStats.de ?? 0)
+
   const maxLang = Math.max(ovCount, omuCount, deCount)
 
   const weeklyMovies = db
@@ -121,6 +122,7 @@ export const AnalyticsPage: FC = () => {
   const firstDate = dateRange.first
     ? new Date(dateRange.first).toLocaleDateString('de-DE', { timeZone: 'Europe/Berlin' })
     : '–'
+
   const lastDate = dateRange.last
     ? new Date(dateRange.last).toLocaleDateString('de-DE', { timeZone: 'Europe/Berlin' })
     : '–'

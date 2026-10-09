@@ -5,6 +5,9 @@
   --border: #333;
   --accent: #9a9a7c;
   --accent-light: #c8c8a0;
+  --warn: #d97706;
+  --warn-bg: rgba(217, 119, 6, 0.1);
+  --warn-border: rgba(217, 119, 6, 0.35);
   --text: #e8e8e8;
   --text-dim: #888;
   --white: #fff;
@@ -440,6 +443,7 @@ p {
   border-radius: var(--radius);
   overflow: hidden;
   transition: border-color 0.15s;
+  position: relative;
 }
 .movie-card:hover {
   border-color: var(--accent);
@@ -554,6 +558,8 @@ p {
 
 .showtime-link {
   text-decoration: none;
+  position: relative;
+  z-index: 1;
 }
 .showtime-link:hover .showtime-pill {
   border-color: var(--accent-light);
@@ -587,13 +593,13 @@ p {
 }
 
 .pill-lang {
-  font-size: 0.7rem;
+  font-size: 0.78rem;
   color: var(--text-dim);
 }
 
 .pill-badge {
-  font-size: 0.65rem;
-  padding: 0.1rem 0.3rem;
+  font-size: 0.72rem;
+  padding: 0.15rem 0.4rem;
   border-radius: 3px;
   background: var(--surface-accent);
   color: var(--accent-light);
@@ -676,6 +682,10 @@ p {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  color: var(--text);
+}
+.room-entry-title:hover {
+  color: var(--accent-light);
 }
 
 .room-entry-tags {
@@ -684,7 +694,7 @@ p {
 }
 
 .ticket-link {
-  font-size: 0.75rem;
+  font-size: 0.85rem;
   color: var(--accent);
   white-space: nowrap;
 }
@@ -779,10 +789,12 @@ p {
   padding: 2px 4px;
   overflow: hidden;
   font-size: 0.7rem;
-  cursor: default;
+  cursor: pointer;
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
+  color: var(--text);
+  text-decoration: none;
 }
 .schedule-block:hover {
   border-color: var(--accent-light);
@@ -954,6 +966,26 @@ p {
   .bar-value {
     display: none;
   }
+
+  .movie-detail-hero {
+    height: 220px;
+  }
+
+  .movie-detail-info {
+    flex-direction: column;
+  }
+
+  .movie-detail--cinematic .movie-detail-info {
+    margin-top: -3rem;
+  }
+
+  .movie-detail--cinematic .movie-detail-body {
+    padding-top: 0.75rem;
+  }
+
+  .movie-detail-poster img {
+    width: 120px;
+  }
 }
 
 .settings-page {
@@ -1009,6 +1041,12 @@ p {
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   padding: 0.6rem 0.8rem;
+}
+
+.settings-env-notice--warn {
+  color: var(--warn);
+  background: var(--warn-bg);
+  border-color: var(--warn-border);
 }
 
 .settings-env-notice code {
@@ -1265,4 +1303,227 @@ p {
   background: var(--surface-2);
   border-radius: 3px;
   flex-shrink: 0;
+}
+
+.movie-title-link {
+  color: inherit;
+}
+.movie-title-link:hover {
+  color: var(--accent-light);
+}
+.movie-title-link::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+}
+
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.85rem;
+  color: var(--text-dim);
+  margin-bottom: 1.25rem;
+}
+
+.back-link:hover {
+  color: var(--text);
+}
+
+.movie-detail {
+  display: flex;
+  flex-direction: column;
+}
+
+.movie-detail-hero {
+  width: 100%;
+  height: 380px;
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--radius);
+  margin-bottom: 0;
+}
+
+.movie-detail-hero::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to bottom,
+    transparent 30%,
+    color-mix(in srgb, var(--bg) 55%, transparent) 65%,
+    var(--bg) 100%
+  );
+}
+
+.movie-detail-backdrop {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 25%;
+  border-radius: var(--radius);
+  display: block;
+}
+
+.movie-detail-hero .back-link {
+  position: absolute;
+  top: 1rem;
+  left: 1rem;
+  z-index: 1;
+  background: rgba(17, 17, 17, 0.55);
+  backdrop-filter: blur(6px);
+  padding: 0.3rem 0.7rem;
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  margin-bottom: 0;
+}
+
+.movie-detail-hero .back-link:hover {
+  background: rgba(17, 17, 17, 0.85);
+  color: var(--white);
+}
+
+.movie-detail-info {
+  display: flex;
+  gap: 1.5rem;
+  align-items: flex-start;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 1.5rem;
+}
+
+.movie-detail--cinematic .movie-detail-info {
+  margin-top: -5rem;
+  position: relative;
+  z-index: 1;
+}
+
+.movie-detail-poster img {
+  width: 160px;
+  border-radius: var(--radius);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+  display: block;
+}
+
+.movie-detail-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  flex: 1;
+}
+
+.movie-detail--cinematic .movie-detail-body {
+  padding-top: 3.5rem;
+}
+
+.movie-detail-title {
+  font-size: 1.9rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.movie-detail-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.btn-trailer {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.2rem 0.65rem;
+  border-radius: 99px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  background: var(--surface-accent);
+  color: var(--accent-light);
+  border: 1px solid var(--accent);
+  transition: all 0.15s;
+}
+
+.btn-trailer:hover {
+  background: var(--accent);
+  color: var(--white);
+}
+
+.movie-detail-desc {
+  font-size: 0.9rem;
+  color: var(--text-dim);
+  line-height: 1.6;
+}
+
+.movie-detail-showings {
+  margin-top: 0.5rem;
+}
+
+.movie-detail-showings-heading {
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-dim);
+  margin-bottom: 0.75rem;
+}
+
+.movie-detail-no-showings {
+  color: var(--text-dim);
+  font-size: 0.9rem;
+}
+
+.showing-day {
+  margin-bottom: 0.75rem;
+}
+
+.showing-day-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--accent);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 0.3rem;
+}
+
+.showing-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.showing-row {
+  display: grid;
+  grid-template-columns: 4rem auto 1fr auto;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.55rem 0.75rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+}
+
+.showing-time {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--accent-light);
+}
+
+.showing-room {
+  font-size: 0.8rem;
+  padding: 0.15rem 0.55rem;
+  border-radius: 99px;
+  background: var(--room-color);
+  color: var(--white);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.showing-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+}
+
+.schedule-block:hover .sched-time {
+  color: var(--accent-light);
 }

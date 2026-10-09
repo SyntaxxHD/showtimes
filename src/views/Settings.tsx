@@ -145,7 +145,7 @@ export const SettingsPage: FC<SettingsPageProps> = ({
 
       <PageSection class='settings-section' title='Film-Benachrichtigungen'>
         {schedule === 'on_demand' && (
-          <p class='settings-env-notice'>
+          <p class='settings-env-notice settings-env-notice--warn'>
             <Icon name='alert-triangle' size={14} /> Benachrichtigungen werden nur ausgelöst,
             wenn das Programm manuell aufgerufen wird. Für zuverlässige Benachrichtigungen
             wähle einen automatischen Abruf-Zeitplan.
@@ -249,7 +249,7 @@ export const SettingsPage: FC<SettingsPageProps> = ({
           </p>
 
           {!tmdbToken && (
-            <p class='settings-env-notice'>
+            <p class='settings-env-notice settings-env-notice--warn'>
               <Icon name='alert-triangle' size={14} /> TMDB-Token benötigt, um Filme zu suchen.
             </p>
           )}

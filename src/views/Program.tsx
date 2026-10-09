@@ -17,7 +17,7 @@ function toLocalDate(iso: string): Date {
   return new Date(new Date(iso).toLocaleString('en-US', { timeZone: TZ }))
 }
 
-function formatTime(iso: string): string {
+export function formatTime(iso: string): string {
   return new Date(iso).toLocaleTimeString('de-DE', {
     hour: '2-digit',
     minute: '2-digit',
@@ -25,7 +25,7 @@ function formatTime(iso: string): string {
   })
 }
 
-function formatDayLabel(dayKey: string): string {
+export function formatDayLabel(dayKey: string): string {
   const d = new Date(dayKey + 'T12:00:00')
   const today = todayLocal()
   const tomorrow = new Date(today)
@@ -86,14 +86,16 @@ function getDayKey(iso: string): string {
   return toLocalDate(iso).toLocaleDateString('en-CA')
 }
 
-function groupByDate(showtimes: Showtime[]): [string, Showtime[]][] {
+export function groupByDate(showtimes: Showtime[]): [string, Showtime[]][] {
   const map = new Map<string, Showtime[]>()
+
   for (const s of showtimes) {
     const key = getDayKey(s.startDatetime)
     const list = map.get(key) ?? []
     list.push(s)
     map.set(key, list)
   }
+
   return [...map.entries()].sort(([a], [b]) => a.localeCompare(b))
 }
 
@@ -105,9 +107,11 @@ function langLabel(
   if (isOV) {
     return 'OV'
   }
+
   if (isSubtitled) {
     return subtitledLang ? `OmU (${subtitledLang.toUpperCase()})` : 'OmU'
   }
+
   return null
 }
 
@@ -116,21 +120,27 @@ function formatBadges(s: Showtime): string[] {
   if (s.is3D) {
     b.push('3D')
   }
+
   if (s.isDolbyAtmos) {
     b.push('Dolby Atmos')
   }
+
   if (s.isImax) {
     b.push('IMAX')
   }
+
   if (s.is4DX) {
     b.push('4DX')
   }
+
   if (s.isPremiere) {
     b.push('Premiere')
   }
+
   if (s.isPreview) {
     b.push('Vorpremiere')
   }
+
   return b
 }
 
@@ -138,12 +148,15 @@ function weekContaining(day: string): string {
   const d = new Date(day + 'T12:00:00')
   const dow = d.getDay() === 0 ? 7 : d.getDay()
   d.setDate(d.getDate() - dow + 1)
+
   const year = d.getFullYear()
   const jan4 = new Date(year, 0, 4)
   const startOfWeek1 = new Date(jan4)
   startOfWeek1.setDate(jan4.getDate() - (jan4.getDay() === 0 ? 6 : jan4.getDay() - 1))
+
   const weekNum =
     Math.round((d.getTime() - startOfWeek1.getTime()) / (7 * 24 * 60 * 60 * 1000)) + 1
+
   return `${year}-W${String(weekNum).padStart(2, '0')}`
 }
 
@@ -151,11 +164,14 @@ function mondayOf(week: string): string {
   const [yearStr, wStr] = week.split('-W')
   const year = parseInt(yearStr, 10)
   const weekNum = parseInt(wStr, 10)
+
   const jan4 = new Date(year, 0, 4)
   const startOfWeek1 = new Date(jan4)
   startOfWeek1.setDate(jan4.getDate() - (jan4.getDay() === 0 ? 6 : jan4.getDay() - 1))
+
   const monday = new Date(startOfWeek1)
   monday.setDate(startOfWeek1.getDate() + (weekNum - 1) * 7)
+
   return monday.toLocaleDateString('en-CA')
 }
 
@@ -163,26 +179,31 @@ function weekDays(week: string): string[] {
   const monday = mondayOf(week)
   const days: string[] = []
   const d = new Date(monday + 'T12:00:00')
+
   for (let i = 0; i < 7; i++) {
     days.push(d.toLocaleDateString('en-CA'))
     d.setDate(d.getDate() + 1)
   }
+
   return days
 }
 
 function addDays(date: string, n: number): string {
   const d = new Date(date + 'T12:00:00')
   d.setDate(d.getDate() + n)
+
   return d.toLocaleDateString('en-CA')
 }
 
 function dateRange(from: string, to: string): string[] {
   const days: string[] = []
   let cur = from
+
   while (cur <= to) {
     days.push(cur)
     cur = addDays(cur, 1)
   }
+
   return days
 }
 
@@ -269,6 +290,7 @@ function applyFilters(movies: Movie[], filters: Filters, activeWeek: string): Mo
 const ShowtimePill: FC<{ s: Showtime }> = ({ s }) => {
   const lang = langLabel(s.isOriginalVersion, s.isSubtitled, s.subtitledLanguage)
   const badges = formatBadges(s)
+
   const content = (
     <span class='showtime-pill'>
       <span class='pill-time'>{formatTime(s.startDatetime)}</span>
@@ -306,7 +328,9 @@ const MovieCard: FC<{ movie: Movie }> = ({ movie: m }) => {
           )}
         </div>
         <div class='movie-info'>
-          <h2 class='movie-title'>{m.name}</h2>
+          <h2 class='movie-title'>
+            <a href={`/movie/${m.contentId}`} class='movie-title-link'>{m.name}</a>
+          </h2>
           <div class='movie-meta'>
             {m.ageRating && <span class='badge badge-fsk'>FSK {m.ageRating}</span>}
             {m.duration && <span class='badge badge-duration'>{m.duration} min</span>}
@@ -335,11 +359,13 @@ const ByRoomView: FC<{ movies: Movie[]; rooms: Room[] }> = ({ movies, rooms }) =
   for (const r of rooms) {
     roomShowtimes.set(r.id, [])
   }
+
   for (const m of movies) {
     for (const s of m.showtimes) {
       roomShowtimes.get(s.roomId)?.push({ movie: m, showtime: s })
     }
   }
+
   for (const list of roomShowtimes.values()) {
     list.sort((a, b) => a.showtime.startDatetime.localeCompare(b.showtime.startDatetime))
   }
@@ -353,12 +379,14 @@ const ByRoomView: FC<{ movies: Movie[]; rooms: Room[] }> = ({ movies, rooms }) =
         }
 
         const byDay = new Map<string, { movie: Movie; showtime: Showtime }[]>()
+
         for (const e of entries) {
           const key = getDayKey(e.showtime.startDatetime)
           const list = byDay.get(key) ?? []
           list.push(e)
           byDay.set(key, list)
         }
+
         const days = [...byDay.entries()].sort(([a], [b]) => a.localeCompare(b))
 
         return (
@@ -377,7 +405,12 @@ const ByRoomView: FC<{ movies: Movie[]; rooms: Room[] }> = ({ movies, rooms }) =
                   {dayEntries.map(({ movie, showtime: s }) => (
                     <div class='room-entry'>
                       <span class='room-entry-time'>{formatTime(s.startDatetime)}</span>
-                      <span class='room-entry-title'>{movie.name}</span>
+                      <a
+                        href={`/movie/${movie.contentId}`}
+                        class='room-entry-title'
+                      >
+                        {movie.name}
+                      </a>
                       <div class='room-entry-tags'>
                         <ShowtimePill s={s} />
                       </div>
@@ -400,20 +433,25 @@ const ByRoomView: FC<{ movies: Movie[]; rooms: Room[] }> = ({ movies, rooms }) =
 
 const ScheduleView: FC<{ movies: Movie[]; rooms: Room[] }> = ({ movies, rooms }) => {
   const byRoom = new Map<number, { movie: Movie; s: Showtime }[]>()
+
   for (const r of rooms) {
     byRoom.set(r.id, [])
   }
+
   for (const m of movies) {
     for (const s of m.showtimes) {
       byRoom.get(s.roomId)?.push({ movie: m, s })
     }
   }
+
   for (const list of byRoom.values()) {
     list.sort((a, b) => a.s.startDatetime.localeCompare(b.s.startDatetime))
   }
 
   const activeRooms = rooms.filter(r => (byRoom.get(r.id)?.length ?? 0) > 0)
+
   const allShowings = movies.flatMap(m => m.showtimes).filter(s => s.endDatetime != null)
+
   if (allShowings.length === 0) {
     return <EmptyState>Keine Vorstellungen.</EmptyState>
   }
@@ -467,28 +505,23 @@ const ScheduleView: FC<{ movies: Movie[]; rooms: Room[] }> = ({ movies, rooms })
                       getHour(s.startDatetime) * 60 +
                       toLocalDate(s.startDatetime).getMinutes() -
                       startHour * 60
+
                     const endD = toLocalDate(s.endDatetime!)
                     const endMin =
                       endD.getHours() * 60 + endD.getMinutes() - startHour * 60
+
                     const height = Math.max((endMin - startMin) * pxPerMin, 24)
+
                     return (
-                      <div
+                      <a
+                        href={`/movie/${m.contentId}`}
                         class='schedule-block'
                         style={`top: ${startMin * pxPerMin}px; height: ${height}px`}
                         title={`${m.name} (${formatTime(s.startDatetime)}–${formatTime(s.endDatetime!)})`}
                       >
-                        {s.ticketUrl ? (
-                          <ExternalLink href={s.ticketUrl} class='schedule-block-link'>
-                            {m.name}
-                            <span class='sched-time'>{formatTime(s.startDatetime)}</span>
-                          </ExternalLink>
-                        ) : (
-                          <span>
-                            {m.name}
-                            <span class='sched-time'>{formatTime(s.startDatetime)}</span>
-                          </span>
-                        )}
-                      </div>
+                        {m.name}
+                        <span class='sched-time'>{formatTime(s.startDatetime)}</span>
+                      </a>
                     )
                   })}
               </div>
@@ -517,6 +550,7 @@ const FilterBar: FC<{
     hasDolby = false,
     hasImax = false,
     has4DX = false
+
   for (const m of program.movies) {
     for (const s of m.showtimes) {
       if (s.isOriginalVersion) {
@@ -548,6 +582,7 @@ const FilterBar: FC<{
         params.set(k, v)
       }
     }
+
     p('view', filters.view !== 'movie' ? filters.view : null)
     p('week', overrides.week !== undefined ? overrides.week : activeWeek)
     p('date', overrides.date !== undefined ? overrides.date : filters.date)
@@ -562,6 +597,7 @@ const FilterBar: FC<{
     p('lang', overrides.lang !== undefined ? overrides.lang : filters.lang)
     p('format', overrides.format !== undefined ? overrides.format : filters.format)
     p('time', overrides.time !== undefined ? overrides.time : filters.time)
+
     if (filters.premiereOnly) {
       params.set('premiere', '1')
     }
@@ -572,6 +608,7 @@ const FilterBar: FC<{
     if (newOffset !== 0) {
       params.set('offset', String(newOffset))
     }
+
     const q = params.toString()
     return '/program' + (q ? '?' + q : '')
   }
@@ -763,6 +800,7 @@ const ViewToggle: FC<{ filters: Filters; activeWeek: string }> = ({
     if (filters.premiereOnly) {
       params.set('premiere', '1')
     }
+
     const q = params.toString()
     return '/program' + (q ? '?' + q : '')
   }
@@ -804,6 +842,7 @@ export const ProgramPage: FC<{
 }> = ({ program, filters, availableDays }) => {
   const today = todayLocal()
   const activeWeek = filters.week ?? weekContaining(filters.date ?? today)
+
   const filtered = applyFilters(program.movies, filters, activeWeek)
   const totalShowings = filtered.reduce((n, m) => n + m.showtimes.length, 0)
 
