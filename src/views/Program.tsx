@@ -159,20 +159,6 @@ function mondayOf(week: string): string {
   return monday.toLocaleDateString('en-CA')
 }
 
-function prevWeek(week: string): string {
-  const monday = mondayOf(week)
-  const d = new Date(monday + 'T12:00:00')
-  d.setDate(d.getDate() - 7)
-  return weekContaining(d.toLocaleDateString('en-CA'))
-}
-
-function nextWeek(week: string): string {
-  const monday = mondayOf(week)
-  const d = new Date(monday + 'T12:00:00')
-  d.setDate(d.getDate() + 7)
-  return weekContaining(d.toLocaleDateString('en-CA'))
-}
-
 function weekDays(week: string): string[] {
   const monday = mondayOf(week)
   const days: string[] = []
@@ -180,6 +166,22 @@ function weekDays(week: string): string[] {
   for (let i = 0; i < 7; i++) {
     days.push(d.toLocaleDateString('en-CA'))
     d.setDate(d.getDate() + 1)
+  }
+  return days
+}
+
+function addDays(date: string, n: number): string {
+  const d = new Date(date + 'T12:00:00')
+  d.setDate(d.getDate() + n)
+  return d.toLocaleDateString('en-CA')
+}
+
+function dateRange(from: string, to: string): string[] {
+  const days: string[] = []
+  let cur = from
+  while (cur <= to) {
+    days.push(cur)
+    cur = addDays(cur, 1)
   }
   return days
 }
@@ -504,7 +506,8 @@ const FilterBar: FC<{
   availableDays: Set<string>
   activeWeek: string
 }> = ({ program, filters, availableDays, activeWeek }) => {
-  const days = weekDays(activeWeek)
+  const today = todayLocal()
+  const allDays = dateRange(addDays(today, -14), addDays(today, 21))
 
   const langs = new Set<string>()
   let has3D = false,
@@ -566,40 +569,34 @@ const FilterBar: FC<{
   return (
     <div class='filter-bar'>
       <FilterRow icon='calendar-days' label='Tag'>
-        <div class='day-strip'>
+        <div class='day-strip-outer'>
           <a
-            href={filterUrl({ week: prevWeek(activeWeek), date: null })}
-            class='week-arrow'
-            aria-label='Vorherige Woche'
-          >
-            &#8249;
-          </a>
-          <a
-            href={filterUrl({ date: null })}
+            href={filterUrl({ date: null, week: null })}
             class={`day-chip ${!filters.date ? 'active' : ''}`}
           >
             <span class='day-chip-weekday'>Woche</span>
           </a>
-          {days.map(d => {
-            const { weekday, date } = formatDayParts(d)
-            const hasData = availableDays.has(d)
-            return (
-              <a
-                href={filterUrl({ date: d })}
-                class={`day-chip ${filters.date === d ? 'active' : ''} ${!hasData ? 'day-chip-empty' : ''}`}
-              >
-                <span class='day-chip-weekday'>{weekday}</span>
-                <span class='day-chip-date'>{date}</span>
-              </a>
-            )
-          })}
           <a
-            href={filterUrl({ week: nextWeek(activeWeek), date: null })}
-            class='week-arrow'
-            aria-label='Nächste Woche'
+            href={filterUrl({ date: today, week: null })}
+            class={`day-chip ${filters.date === today ? 'active' : ''}`}
           >
-            &#8250;
+            <span class='day-chip-weekday'>Heute</span>
           </a>
+          <div class='day-strip'>
+            {allDays.map(d => {
+              const hasData = availableDays.has(d)
+              const { weekday, date } = formatDayParts(d)
+              return (
+                <a
+                  href={filterUrl({ date: d, week: null })}
+                  class={`day-chip ${filters.date === d ? 'active' : ''} ${!hasData ? 'day-chip-empty' : ''}`}
+                >
+                  <span class='day-chip-weekday'>{weekday}</span>
+                  <span class='day-chip-date'>{date}</span>
+                </a>
+              )
+            })}
+          </div>
         </div>
       </FilterRow>
 

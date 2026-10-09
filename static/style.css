@@ -265,27 +265,10 @@ p {
   gap: 0.35rem;
 }
 
-.week-arrow {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0.3rem 0.6rem;
-  border-radius: var(--radius-sm);
-  border: 1px solid var(--border);
-  background: var(--surface-2);
-  color: var(--text-dim);
-  font-size: 1rem;
-  line-height: 1;
-  transition: all 0.15s;
-  flex-shrink: 0;
-}
-
-.week-arrow:hover {
-  color: var(--text);
-  border-color: var(--text-dim);
-}
-
-.day-strip-wrap {
+.day-strip-outer {
+  display: flex;
+  gap: 0.35rem;
+  align-items: stretch;
   flex: 1;
   min-width: 0;
 }
@@ -293,13 +276,21 @@ p {
 .day-strip {
   display: flex;
   gap: 0.35rem;
-  flex-wrap: wrap;
-  align-items: stretch;
+  overflow-x: auto;
+  flex: 1;
+  min-width: 0;
+  scrollbar-width: none;
+  mask-image: linear-gradient(to right, transparent, black 1.5rem, black calc(100% - 1.5rem), transparent);
+  -webkit-mask-image: linear-gradient(to right, transparent, black 1.5rem, black calc(100% - 1.5rem), transparent);
+}
+
+.day-strip::-webkit-scrollbar {
+  display: none;
 }
 
 .day-chip {
   scroll-snap-align: start;
-  flex: 1;
+  flex-shrink: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -310,7 +301,6 @@ p {
   background: var(--surface-2);
   color: var(--text-dim);
   white-space: nowrap;
-  min-width: 0;
   transition: all 0.15s;
   line-height: 1.3;
 }

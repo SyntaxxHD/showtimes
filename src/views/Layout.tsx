@@ -21,6 +21,7 @@ const Layout: FC<PropsWithChildren<LayoutProps>> = ({
         <meta name='viewport' content='width=device-width, initial-scale=1' />
         <title>{pageTitle}</title>
         <link rel='stylesheet' href='/static/style.css' />
+        <script src='/static/scroll.js' defer></script>
         <link
           rel='icon'
           href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='6' fill='%231c1c1c'/><circle cx='16' cy='16' r='10' fill='none' stroke='%239a9a7c' stroke-width='2'/><polygon points='13,11 23,16 13,21' fill='%239a9a7c'/></svg>"
