@@ -370,6 +370,10 @@ p {
   opacity: 0.8;
 }
 
+.day-chip-woche-mobile {
+  display: none;
+}
+
 .chip {
   display: inline-block;
   padding: 0.25rem 0.65rem;
@@ -943,6 +947,40 @@ p {
 @media (max-width: 640px) {
   .site-main {
     padding: 1rem;
+  }
+
+  /* day strip: own full-width row so chips fill as much space as possible */
+  .day-strip-outer {
+    flex-basis: 100%;
+  }
+
+  /* hide the fixed shortcut chips (Woche, Heute) outside the strip —
+     they eat too much horizontal space on small screens */
+  .day-strip-outer > .day-chip {
+    display: none;
+  }
+
+  /* bigger touch targets on the offset arrows */
+  .week-arrow {
+    padding: 0.55rem 0.7rem;
+    font-size: 1.25rem;
+  }
+
+  /* chips: adequate touch target height; snap-align already set per chip */
+  .day-chip {
+    min-width: 2.75rem;
+    padding: 0.55rem 0.4rem;
+  }
+
+  /* snap-scroll so a swipe lands on chip boundaries, not mid-chip */
+  .day-strip {
+    scroll-snap-type: x mandatory;
+    mask-image: none;
+    -webkit-mask-image: none;
+  }
+
+  .day-chip-woche-mobile {
+    display: flex;
   }
 
   .movie-grid {

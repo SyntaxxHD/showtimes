@@ -637,6 +637,12 @@ const FilterBar: FC<{
             &#8249;
           </a>
           <div class='day-strip'>
+            <a
+              href={filterUrl({ date: null, week: null })}
+              class={`day-chip day-chip-woche-mobile ${!filters.date ? 'active' : ''}`}
+            >
+              <span class='day-chip-weekday'>Woche</span>
+            </a>
             {allDays.map(d => {
               const hasData = availableDays.has(d)
               const { weekday, date } = formatDayParts(d)
