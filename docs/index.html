@@ -1,0 +1,392 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <!-- Primary Meta Tags -->
+    <title>showtimes: Kino-Spielplan im Überblick</title>
+    <meta name="title" content="showtimes: Kino-Spielplan im Überblick" />
+    <meta
+      name="description"
+      content="Selbst gehosteter Spielplan-Viewer für jedes Cineamo-Kino. Die ganze Woche auf einen Blick, filterbar nach Saal und Format, mit Push-Benachrichtigungen für neue Vorstellungen."
+    />
+    <meta name="keywords" content="kino spielplan, cineamo, vorstellungen, showtimes, self-hosted, open source, docker" />
+    <meta name="author" content="SyntaxxHD" />
+    <meta name="robots" content="index, follow" />
+    <link rel="canonical" href="https://syntaxxhd.github.io/showtimes/" />
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://syntaxxhd.github.io/showtimes/" />
+    <meta property="og:title" content="showtimes: Kino-Spielplan im Überblick" />
+    <meta
+      property="og:description"
+      content="Selbst gehosteter Spielplan-Viewer für jedes Cineamo-Kino. Die ganze Woche auf einen Blick, filterbar nach Saal und Format."
+    />
+    <meta property="og:image" content="https://syntaxxhd.github.io/showtimes/screenshots/program.png" />
+    <meta property="og:locale" content="de_DE" />
+    <meta property="og:site_name" content="showtimes" />
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:url" content="https://syntaxxhd.github.io/showtimes/" />
+    <meta name="twitter:title" content="showtimes: Kino-Spielplan im Überblick" />
+    <meta
+      name="twitter:description"
+      content="Selbst gehosteter Spielplan-Viewer für jedes Cineamo-Kino. Die ganze Woche auf einen Blick, filterbar nach Saal und Format."
+    />
+    <meta name="twitter:image" content="https://syntaxxhd.github.io/showtimes/screenshots/program.png" />
+
+    <!-- JSON-LD -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "showtimes",
+      "description": "Selbst gehosteter Spielplan-Viewer für jedes Cineamo-Kino.",
+      "url": "https://syntaxxhd.github.io/showtimes/",
+      "applicationCategory": "UtilitiesApplication",
+      "operatingSystem": "Any",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "EUR"
+      },
+      "codeRepository": "https://github.com/SyntaxxHD/showtimes",
+      "author": {
+        "@type": "Person",
+        "name": "SyntaxxHD"
+      }
+    }
+    </script>
+
+    <link
+      rel="icon"
+      href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%231c1c1c'/><circle cx='16' cy='16' r='10' fill='none' stroke='%239a9a7c' stroke-width='2'/><polygon points='13,11 22,16 13,21' fill='%239a9a7c'/></svg>"
+    />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+
+    <header class="header">
+      <div class="header-inner">
+        <a class="logo" href="#">
+          <svg
+            class="logo-icon"
+            viewBox="0 0 32 32"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            aria-hidden="true"
+          >
+            <rect width="32" height="32" rx="7" fill="#1c1c1c" />
+            <circle cx="16" cy="16" r="10" stroke="#9a9a7c" stroke-width="1.5" />
+            <polygon points="13.5,11.5 22,16 13.5,20.5" fill="#9a9a7c" />
+          </svg>
+          showtimes
+        </a>
+        <a
+          class="chip"
+          href="https://github.com/SyntaxxHD/showtimes"
+          target="_blank"
+          rel="noopener"
+        >
+          <svg
+            viewBox="0 0 24 24"
+            aria-hidden="true"
+            width="13"
+            height="13"
+            style="fill: currentColor; stroke: none; flex-shrink: 0;"
+          >
+            <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z" />
+          </svg>
+          Auf GitHub ansehen
+        </a>
+      </div>
+    </header>
+
+    <!-- Hero -->
+    <section class="hero">
+      <div class="hero-inner">
+        <svg
+          class="hero-mark"
+          viewBox="0 0 56 56"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+          aria-hidden="true"
+        >
+          <rect width="56" height="56" rx="13" fill="#1c1c1c" />
+          <circle cx="28" cy="28" r="17" stroke="#9a9a7c" stroke-width="1.75" />
+          <polygon points="23,19.5 38.5,28 23,36.5" fill="#9a9a7c" />
+        </svg>
+        <h1>Alle Vorstellungen<br /><em>auf einen Blick</em></h1>
+        <p>
+          Selbst gehosteter Spielplan-Viewer für jedes Cineamo-Kino. Die ganze Woche auf einen
+          Blick, filterbar nach Saal und Format, mit Benachrichtigungen wenn ein Film neue
+          Vorstellungen bekommt.
+        </p>
+        <div class="hero-ctas">
+          <a class="btn-primary" href="#installation">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              width="15"
+              height="15"
+              aria-hidden="true"
+            >
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+              <polyline points="7 10 12 15 17 10" />
+              <line x1="12" y1="15" x2="12" y2="3" />
+            </svg>
+            Mit Docker installieren
+          </a>
+          <a
+            class="chip"
+            href="https://github.com/SyntaxxHD/showtimes"
+            target="_blank"
+            rel="noopener"
+          >
+            <svg
+              viewBox="0 0 24 24"
+              aria-hidden="true"
+              width="13"
+              height="13"
+              style="fill: currentColor; stroke: none;"
+            >
+              <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z" />
+            </svg>
+            Auf GitHub ansehen
+          </a>
+        </div>
+      </div>
+      <div class="hero-preview">
+        <img src="screenshots/program.png" alt="showtimes Filmraster mit Postern, Laufzeiten und Vorstellungszeiten" />
+      </div>
+    </section>
+
+    <!-- Ansichten -->
+    <section class="section section-surface">
+      <div class="container">
+        <div class="section-header">
+          <p class="eyebrow">Ansichten</p>
+          <h2 class="section-heading">Drei Wege, den Spielplan zu sehen</h2>
+          <p class="section-sub">Per Klick im Header zwischen Ansichten wechseln, jede ist für einen anderen Anwendungsfall optimiert.</p>
+        </div>
+        <div class="views-grid">
+
+          <div class="view-card">
+            <div class="view-label">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18" />
+                <line x1="7" y1="2" x2="7" y2="22" />
+                <line x1="17" y1="2" x2="17" y2="22" />
+                <line x1="2" y1="12" x2="22" y2="12" />
+                <line x1="2" y1="7" x2="7" y2="7" />
+                <line x1="17" y1="7" x2="22" y2="7" />
+                <line x1="17" y1="17" x2="22" y2="17" />
+                <line x1="2" y1="17" x2="7" y2="17" />
+              </svg>
+              Filmraster
+            </div>
+            <div class="view-screenshot">
+              <img src="screenshots/program.png" alt="Filmraster-Ansicht" />
+            </div>
+            <p class="view-desc">Eine Karte pro Film: Poster, Laufzeit, Altersfreigabe und alle Vorstellungen mit Saal- und Sprachangaben. Klick auf eine Karte öffnet die Detailseite.</p>
+          </div>
+
+          <div class="view-card">
+            <div class="view-label">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <rect x="3" y="3" width="7" height="7" />
+                <rect x="14" y="3" width="7" height="7" />
+                <rect x="14" y="14" width="7" height="7" />
+                <rect x="3" y="14" width="7" height="7" />
+              </svg>
+              Nach Saal
+            </div>
+            <div class="view-screenshot">
+              <img src="screenshots/saal.png" alt="Saalübersicht" />
+            </div>
+            <p class="view-desc">Der Spielplan nach Saal gruppiert. Jede Sektion zeigt das farbcodierte Saallabel und alle dort laufenden Filme des Tages.</p>
+          </div>
+
+          <div class="view-card">
+            <div class="view-label">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+                <line x1="16" y1="2" x2="16" y2="6" />
+                <line x1="8" y1="2" x2="8" y2="6" />
+                <line x1="3" y1="10" x2="21" y2="10" />
+              </svg>
+              Zeitplan
+            </div>
+            <div class="view-screenshot">
+              <img src="screenshots/zeitplan.png" alt="Zeitplan-Ansicht" />
+            </div>
+            <p class="view-desc">Ein pixelgenauer Zeitstrahl über alle Säle gleichzeitig. Lücken, Überschneidungen und den Tagesrhythmus auf einen Blick erfassen.</p>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- Funktionen -->
+    <section class="section">
+      <div class="container">
+        <div class="section-header">
+          <p class="eyebrow">Funktionen</p>
+          <h2 class="section-heading">Das steckt drin</h2>
+        </div>
+        <div class="features-grid">
+
+          <div class="feature-card">
+            <div class="feature-icon">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <polygon points="5 3 19 12 5 21 5 3" />
+              </svg>
+            </div>
+            <h3>Trailer &amp; Details</h3>
+            <p>Jeder Film verlinkt direkt auf seinen Trailer und zeigt Besetzung, Originaltitel und Synopsis aus TMDB.</p>
+          </div>
+
+          <div class="feature-card">
+            <div class="feature-icon">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <line x1="4" y1="6" x2="20" y2="6" />
+                <line x1="4" y1="12" x2="12" y2="12" />
+                <line x1="4" y1="18" x2="20" y2="18" />
+              </svg>
+            </div>
+            <h3>Filter</h3>
+            <p>Nach Tag, Saal, Sprache (OV / OmU), Format (3D, Dolby usw.) oder Tageszeit filtern. Filter kombinieren sich und bleiben beim Navigieren erhalten.</p>
+          </div>
+
+          <div class="feature-card">
+            <div class="feature-icon">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <line x1="18" y1="20" x2="18" y2="10" />
+                <line x1="12" y1="20" x2="12" y2="4" />
+                <line x1="6" y1="20" x2="6" y2="14" />
+              </svg>
+            </div>
+            <h3>Statistiken</h3>
+            <p>Film- und saalübergreifende Auswertungen über die gespeicherte Historie: Laufzeit, Vorstellungsanzahl, stärkste Tage.</p>
+          </div>
+
+          <div class="feature-card">
+            <div class="feature-icon">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+                <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+              </svg>
+            </div>
+            <h3>Film-Benachrichtigungen</h3>
+            <p>Einen Film beobachten. Sobald neue Vorstellungen erscheinen, kommt eine Push-Nachricht oder ein Webhook an ntfy, Gotify, Slack oder eine beliebige URL.</p>
+          </div>
+
+
+        </div>
+      </div>
+    </section>
+
+    <!-- Installation -->
+    <section id="installation" class="section section-surface">
+      <div class="container">
+        <div class="section-header">
+          <p class="eyebrow">Installation</p>
+          <h2 class="section-heading">In zwei Schritten starten</h2>
+          <p class="section-sub">Benötigt Docker. Getestet auf Linux, macOS und Windows (WSL2).</p>
+        </div>
+
+        <div class="install-grid">
+          <div class="install-step">
+            <h3>1. docker-compose.yml anlegen</h3>
+            <div class="code-wrap">
+              <button class="copy-btn" aria-label="docker-compose.yml kopieren">Kopieren</button>
+              <pre><span class="hl-k">services</span>:
+  <span class="hl-k">showtimes</span>:
+    <span class="hl-k">image</span>: ghcr.io/syntaxxhd/showtimes:latest
+    <span class="hl-k">ports</span>:
+      <span class="hl-p">-</span> '3000:3000'
+    <span class="hl-k">volumes</span>:
+      <span class="hl-p">-</span> showtimes-data:/app/data
+    <span class="hl-k">environment</span>:
+      <span class="hl-k">CINEMA_ID</span>: <span class="hl-n">1045</span>
+      <span class="hl-k">DB_PATH</span>: /app/data/showtimes.db
+
+<span class="hl-k">volumes</span>:
+  <span class="hl-k">showtimes-data</span>:</pre>
+            </div>
+          </div>
+
+          <div class="install-step">
+            <h3>2. Starten</h3>
+            <div class="code-wrap">
+              <button class="copy-btn" aria-label="Startbefehl kopieren">Kopieren</button>
+              <pre><span class="hl-k">docker compose up</span> <span class="hl-flag">-d</span></pre>
+            </div>
+            <p class="install-note">
+              <strong>http://localhost:3000</strong> öffnen, der Spielplan wird automatisch geladen.
+              Die SQLite-Datenbank liegt in einem Named Volume und bleibt bei Container-Neustarts erhalten.
+            </p>
+          </div>
+        </div>
+
+        <hr class="divider" />
+
+        <div class="install-notes">
+
+          <div class="note-card">
+            <h3>Kino festlegen</h3>
+            <p>
+              <strong>CINEMA_ID: 1045</strong> ist der Standard (<a href="https://luxor-walldorf.de" target="_blank" rel="noopener">Luxor-Filmpalast Walldorf</a>).
+              Für ein anderes Kino einfach den Wert in der Compose-Datei ändern.
+            </p>
+            <p>
+              Das eigene Kino findet man in der <strong>/settings</strong>-Seite der laufenden App,
+              per Name suchen und mit einem Klick übernehmen.
+            </p>
+          </div>
+
+          <div class="note-card">
+            <h3>Kino-ID ermitteln</h3>
+            <p>
+              Wer sein Kino nicht über die Suche findet: In den Netzwerkaufrufen der Cineamo-App
+              oder der Kino-Website taucht die ID als <strong>cinemaId=XXXX</strong> in der URL
+              oder API-Response auf.
+            </p>
+          </div>
+
+          <div class="note-card">
+            <h3>Benachrichtigungen</h3>
+            <p>
+              Unter <strong>Einstellungen &gt; Film-Benachrichtigungen</strong> einen kostenlosen
+              Lese-Token von <a href="https://www.themoviedb.org/settings/api" target="_blank" rel="noopener">themoviedb.org</a>
+              hinterlegen, dann Filme suchen und beobachten.
+            </p>
+            <p>
+              Benachrichtigungen kommen per Browser-Push oder an eine Webhook-URL (ntfy.sh, Gotify,
+              Slack). Auf iOS muss die Seite als PWA zum Home-Bildschirm hinzugefügt werden.
+            </p>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <footer>
+      <p>
+        <a href="https://github.com/SyntaxxHD/showtimes" target="_blank" rel="noopener">Open Source auf GitHub</a>
+        &nbsp;·&nbsp; Kompatibel mit jedem <a href="https://cineamo.com" target="_blank" rel="noopener">Cineamo</a>-Kino
+      </p>
+      <p style="margin-top: 0.6rem; font-size: 0.8rem;">Dieses Projekt steht in keiner Verbindung zu Cineamo und wird von Cineamo weder unterstützt noch offiziell anerkannt.</p>
+    </footer>
+
+    <script src="script.js"></script>
+
+  </body>
+</html>
