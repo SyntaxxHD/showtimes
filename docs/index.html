@@ -161,6 +161,7 @@
             </svg>
             Auf GitHub ansehen
           </a>
+          <a class="chip" href="#cinema-checker">Kino prüfen</a>
         </div>
       </div>
       <div class="hero-preview">
@@ -293,6 +294,33 @@
       </div>
     </section>
 
+    <!-- Cinema checker -->
+    <section id="cinema-checker" class="section">
+      <div class="container">
+        <div class="section-header">
+          <p class="eyebrow">Kompatibilität</p>
+          <h2 class="section-heading">Wird dein Kino unterstützt?</h2>
+          <p class="section-sub">showtimes funktioniert mit jedem Cineamo-Kino. Gib deinen Kinonamen ein und prüfe es direkt hier.</p>
+        </div>
+        <div class="cinema-checker-wrap">
+          <input
+            class="cinema-checker-input"
+            id="cinema-input"
+            type="text"
+            placeholder="Kinoname oder Stadt..."
+            autocomplete="off"
+            spellcheck="false"
+          />
+          <div class="cinema-checker-status" id="cinema-status" aria-live="polite"></div>
+          <div class="cinema-checker-results" id="cinema-results" hidden></div>
+          <div class="cinema-success" id="cinema-success" hidden>
+            <span class="cinema-success-text" id="cinema-success-text"></span>
+            <a class="btn-primary" href="#installation">Jetzt installieren</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
     <!-- Installation -->
     <section id="installation" class="section section-surface">
       <div class="container">
@@ -386,6 +414,7 @@
       <p style="margin-top: 0.6rem; font-size: 0.8rem;">Dieses Projekt steht in keiner Verbindung zu Cineamo und wird von Cineamo weder unterstützt noch offiziell anerkannt.</p>
     </footer>
 
+    <script src="cinemas.js"></script>
     <script src="script.js"></script>
 
   </body>

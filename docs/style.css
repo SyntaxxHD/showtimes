@@ -19,6 +19,8 @@
   padding: 0;
 }
 
+[hidden] { display: none !important; }
+
 html {
   font-size: 15px;
   scroll-behavior: smooth;
@@ -372,11 +374,11 @@ pre {
   white-space: pre;
 }
 
-/* Syntax highlight classes */
-.hl-k { color: var(--accent-light); }
-.hl-n { color: #89b4fa; }
-.hl-p { color: var(--text-dim); }
-.hl-flag { color: var(--text-dim); }
+/* Syntax highlight classes — GitHub Dark palette */
+.hl-k { color: #79c0ff; }
+.hl-n { color: #7ee787; }
+.hl-p { color: #8b949e; }
+.hl-flag { color: #8b949e; }
 
 .copy-btn {
   position: absolute;
@@ -442,6 +444,95 @@ pre {
   border: none;
   border-top: 1px solid var(--border);
   margin: 2.5rem 0;
+}
+
+/* ── Cinema checker ── */
+
+.cinema-checker-wrap {
+  max-width: 560px;
+  margin: 0 auto;
+}
+
+.cinema-checker-input {
+  width: 100%;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  padding: 0.8rem 1rem;
+  font-size: 0.95rem;
+  font-family: inherit;
+  transition: border-color 0.15s;
+  outline: none;
+}
+
+.cinema-checker-input:focus {
+  border-color: var(--accent);
+}
+
+.cinema-checker-status {
+  margin-top: 0.6rem;
+  font-size: 0.875rem;
+  color: var(--text-dim);
+  min-height: 1.4em;
+}
+
+.cinema-checker-results {
+  margin-top: 0.5rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+
+.cinema-result-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.65rem 1rem;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  cursor: pointer;
+  transition: background 0.1s;
+}
+
+.cinema-result-row:last-child {
+  border-bottom: none;
+}
+
+.cinema-result-row:hover {
+  background: var(--surface-2);
+}
+
+.cinema-result-name {
+  color: var(--text);
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.cinema-result-city {
+  color: var(--text-dim);
+  font-size: 0.82rem;
+}
+
+.cinema-success {
+  margin-top: 0.75rem;
+  background: var(--surface-accent);
+  border: 1px solid var(--accent);
+  border-radius: var(--radius);
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+
+#cinema-checker .section-header {
+  margin-bottom: 1.5rem;
+}
+
+.cinema-success-text {
+  font-size: 0.9rem;
+  color: var(--accent-light);
+  line-height: 1.5;
 }
 
 /* ── Footer ── */
