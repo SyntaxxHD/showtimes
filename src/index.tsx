@@ -362,4 +362,10 @@ app.post('/settings/push-unsubscribe', async c => {
   return c.json({ ok: true })
 })
 
-export default app
+const server = Bun.serve({
+  fetch: app.fetch,
+  port: Number(process.env.PORT ?? 3000),
+  hostname: '0.0.0.0',
+})
+
+console.log(`Listening on ${server.url}`)
