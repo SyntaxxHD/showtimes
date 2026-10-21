@@ -793,6 +793,9 @@ const ViewToggle: FC<{ filters: Filters; activeWeek: string }> = ({
     if (filters.premiereOnly) {
       params.set('premiere', '1')
     }
+    if (filters.offset) {
+      params.set('offset', String(filters.offset))
+    }
 
     const q = params.toString()
     return '/program' + (q ? '?' + q : '')

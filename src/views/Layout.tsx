@@ -22,10 +22,8 @@ const Layout: FC<PropsWithChildren<LayoutProps>> = ({
         <meta name='viewport' content='width=device-width, initial-scale=1' />
         <title>{pageTitle}</title>
 
-        <script src='/static/filter-prefs.js'></script>
         <link rel='stylesheet' href='/static/style.css' />
         <script src='/static/scroll.js' defer></script>
-        <script src='/static/filters.js' defer></script>
 
         <link rel='manifest' href='/static/manifest.json' />
         <link rel='apple-touch-icon' href='/static/icon-180.png' />
