@@ -343,8 +343,8 @@
     <span class="hl-k">volumes</span>:
       <span class="hl-p">-</span> showtimes-data:/app/data
     <span class="hl-k">environment</span>:
-      <span class="hl-k">CINEMA_ID</span>: <span class="hl-n">1045</span>
-      <span class="hl-k">DB_PATH</span>: /app/data/showtimes.db
+<span id="cinema-id-line" style="display:none">      <span class="hl-k">CINEMA_ID</span>: <span class="hl-n" id="cinema-id-value"></span>
+</span>      <span class="hl-k">DB_PATH</span>: /app/data/showtimes.db
 
 <span class="hl-k">volumes</span>:
   <span class="hl-k">showtimes-data</span>:</pre>
@@ -371,12 +371,9 @@
           <div class="note-card">
             <h3>Kino festlegen</h3>
             <p>
-              <strong>CINEMA_ID: 1045</strong> ist der Standard (<a href="https://luxor-walldorf.de" target="_blank" rel="noopener">Luxor-Filmpalast Walldorf</a>).
-              Für ein anderes Kino einfach den Wert in der Compose-Datei ändern.
-            </p>
-            <p>
-              Das eigene Kino findet man in der <strong>/settings</strong>-Seite der laufenden App,
-              per Name suchen und mit einem Klick übernehmen.
+              Das Kino lässt sich in der <strong>/settings</strong>-Seite der laufenden App per
+              Namenssuche auswählen. Alternativ kann die
+              <strong>CINEMA_ID</strong> direkt in der Compose-Datei gesetzt werden.
             </p>
           </div>
 
@@ -413,6 +410,11 @@
       </p>
       <p style="margin-top: 0.6rem; font-size: 0.8rem;">Dieses Projekt steht in keiner Verbindung zu Cineamo und wird von Cineamo weder unterstützt noch offiziell anerkannt.</p>
     </footer>
+
+    <div id="lightbox" class="lightbox" aria-modal="true" role="dialog" hidden>
+      <button class="lightbox-close" aria-label="Schließen">&times;</button>
+      <img class="lightbox-img" src="" alt="" />
+    </div>
 
     <script src="cinemas.js"></script>
     <script src="script.js"></script>

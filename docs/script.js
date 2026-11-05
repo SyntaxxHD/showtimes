@@ -34,6 +34,12 @@ document.querySelectorAll('.code-wrap').forEach(function(wrap) {
     clearResults()
     successText.textContent = '✓ ' + cinema.name + ' in ' + cinema.city + ' wird unterstützt.'
     successEl.hidden = false
+    var cinemaIdLine = document.getElementById('cinema-id-line')
+    var cinemaIdValue = document.getElementById('cinema-id-value')
+    if (cinemaIdLine && cinemaIdValue) {
+      cinemaIdValue.textContent = cinema.id
+      cinemaIdLine.style.display = 'inline'
+    }
   }
 
   function showResults(matches) {
@@ -75,5 +81,40 @@ document.querySelectorAll('.code-wrap').forEach(function(wrap) {
         showResults(matches)
       })
     }, 300)
+  })
+})()
+
+// Lightbox
+;(function() {
+  var lightbox = document.getElementById('lightbox')
+  var lightboxImg = lightbox && lightbox.querySelector('.lightbox-img')
+  var closeBtn = lightbox && lightbox.querySelector('.lightbox-close')
+  if (!lightbox) { return }
+
+  function open(img) {
+    lightboxImg.src = img.src
+    lightboxImg.alt = img.alt
+    lightbox.hidden = false
+    document.body.style.overflow = 'hidden'
+  }
+
+  function close() {
+    lightbox.hidden = true
+    lightboxImg.src = ''
+    document.body.style.overflow = ''
+  }
+
+  document.querySelectorAll('.view-screenshot img').forEach(function(img) {
+    img.addEventListener('click', function() { open(img) })
+  })
+
+  closeBtn.addEventListener('click', close)
+
+  lightbox.addEventListener('click', function(e) {
+    if (e.target === lightbox) { close() }
+  })
+
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape' && !lightbox.hidden) { close() }
   })
 })()

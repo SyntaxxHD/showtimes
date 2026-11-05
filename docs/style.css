@@ -273,6 +273,7 @@ strong { font-weight: 600; }
 .view-screenshot img {
   width: 100%;
   display: block;
+  cursor: pointer;
 }
 
 .view-desc {
@@ -561,4 +562,48 @@ footer a:hover {
   .views-grid, .features-grid, .install-notes { grid-template-columns: 1fr; }
   .install-grid { grid-template-columns: 1fr; }
   .hero-preview { max-height: 240px; overflow: hidden; }
+}
+
+/* ── Lightbox ── */
+
+.lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background: rgba(0, 0, 0, 0.88);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+}
+
+.lightbox[hidden] {
+  display: none !important;
+}
+
+.lightbox-img {
+  max-width: 100%;
+  max-height: 90vh;
+  border-radius: var(--radius);
+  box-shadow: 0 8px 48px rgba(0, 0, 0, 0.6);
+  cursor: pointer;
+}
+
+.lightbox-close {
+  position: absolute;
+  top: 1rem;
+  right: 1.25rem;
+  background: none;
+  border: none;
+  color: var(--text);
+  font-size: 2rem;
+  line-height: 1;
+  cursor: pointer;
+  opacity: 0.7;
+  transition: opacity 0.15s;
+  padding: 0.25rem 0.5rem;
+}
+
+.lightbox-close:hover {
+  opacity: 1;
 }
