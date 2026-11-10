@@ -14,6 +14,7 @@ const TMDB_POSTER_CDN = 'https://cineamo-tmdb.b-cdn.net/t/p/w342'
 interface ImagePaths {
   backdropPath?: string
   posterPath?: string
+  tmdbId?: number | null
 }
 
 export function transform(
@@ -42,6 +43,7 @@ export function transform(
       movieMap.set(content.id, {
         contentId: content.id,
         movieId: content.movieId,
+        tmdbId: imgs?.tmdbId ?? null,
         name: content.name,
         slug: content.slug,
         description: content.description,

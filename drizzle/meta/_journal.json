@@ -15,6 +15,13 @@
       "when": 1791541235419,
       "tag": "0001_add_watches_and_push",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1795000000000,
+      "tag": "0002_add_content_tmdb_id",
+      "breakpoints": true
     }
   ]
 }

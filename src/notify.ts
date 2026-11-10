@@ -90,7 +90,7 @@ export async function checkWatches(program: Program): Promise<void> {
 
   for (const watch of unnotified) {
     const match = program.movies.find(
-      m => m.movieId != null && m.movieId === watch.tmdbId
+      m => m.tmdbId != null && m.tmdbId === watch.tmdbId
     )
     if (!match) {
       continue

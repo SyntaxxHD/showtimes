@@ -67,6 +67,7 @@ async function fetchRooms(cinemaId: number): Promise<ApiCinemaRoom[]> {
 interface ImagePaths {
   backdropPath?: string
   posterPath?: string
+  tmdbId?: number | null
 }
 
 async function fetchImagePathsForContent(
@@ -79,14 +80,23 @@ async function fetchImagePathsForContent(
     }
 
     const data = (await res.json()) as {
-      _embedded?: { cineamoMovie?: { backdropPath?: string; posterPath?: string } }
+      _embedded?: {
+        cineamoMovie?: { backdropPath?: string; posterPath?: string; tmdbId?: number }
+      }
     }
     const movie = data._embedded?.cineamoMovie
     if (!movie) {
       return null
     }
 
-    return [id, { backdropPath: movie.backdropPath, posterPath: movie.posterPath }]
+    return [
+      id,
+      {
+        backdropPath: movie.backdropPath,
+        posterPath: movie.posterPath,
+        tmdbId: movie.tmdbId ?? null
+      }
+    ]
   } catch {
     return null
   }

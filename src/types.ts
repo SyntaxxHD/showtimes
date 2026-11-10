@@ -115,6 +115,7 @@ export interface Showtime {
 export interface Movie {
   contentId: number
   movieId: number | null
+  tmdbId: number | null
   name: string
   slug: string
   description: string | null

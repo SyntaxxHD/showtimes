@@ -18,7 +18,8 @@ export const contents = sqliteTable('contents', {
   backdropImageUrl: text('backdrop_image_url'),
   trailerUrl: text('trailer_url'),
   premiereDate: text('premiere_date'),
-  movieId: integer('movie_id')
+  movieId: integer('movie_id'),
+  tmdbId: integer('tmdb_id')
 })
 
 export const showings = sqliteTable('showings', {

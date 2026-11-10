@@ -63,7 +63,8 @@ export function persistProgram(
           backdropImageUrl: m.backdropImageUrl,
           trailerUrl: m.trailerUrl,
           premiereDate: m.premiereDate,
-          movieId: m.movieId
+          movieId: m.movieId,
+          tmdbId: m.tmdbId
         })
         .onConflictDoUpdate({
           target: contents.id,
@@ -77,7 +78,8 @@ export function persistProgram(
             backdropImageUrl: m.backdropImageUrl,
             trailerUrl: m.trailerUrl,
             premiereDate: m.premiereDate,
-            movieId: m.movieId
+            movieId: m.movieId,
+            tmdbId: m.tmdbId
           }
         })
         .run()
@@ -189,6 +191,7 @@ function baseProgramQuery() {
       trailerUrl: contents.trailerUrl,
       premiereDate: contents.premiereDate,
       movieId: contents.movieId,
+      tmdbId: contents.tmdbId,
       roomTableId: rooms.id,
       seatCount: rooms.seatCount
     })
@@ -225,6 +228,7 @@ function buildProgram(rows: ProgramRow[]): Program | null {
       movieMap.set(row.contentId, {
         contentId: row.contentId,
         movieId: row.movieId,
+        tmdbId: row.tmdbId,
         name: row.contentName,
         slug: row.slug,
         description: row.description,
